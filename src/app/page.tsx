@@ -37,7 +37,7 @@ export default function Page() {
     return (
         <div className="flex flex-col items-center p-6 h-svh">
             <h1 className="w-full text-xl font-extrabold">Splitter</h1>
-            <div className="p-48">
+            <div className="pt-48">
                 <Card className="w-[400px]">
                     <CardHeader>
                         <CardTitle>Join Group</CardTitle>
