@@ -4,6 +4,7 @@ import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { TRPCReactProvider } from "@/trpc/client";
 import { Toaster } from "@/components/ui/sonner";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -26,13 +27,11 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <Providers>
-            <html lang="en">
-                <body className={`${geistSans.variable} ${geistMono.variable}`}>
-                    {children}
-                </body>
-            </html>
-        </Providers>
+        <html lang="en" suppressHydrationWarning>
+            <body className={`${geistSans.variable} ${geistMono.variable}`}>
+                <Providers>{children}</Providers>
+            </body>
+        </html>
     );
 }
 
@@ -43,7 +42,16 @@ function Providers({
 }>) {
     return (
         <ClerkProvider>
-            <TRPCReactProvider>{children}</TRPCReactProvider>
+            <TRPCReactProvider>
+                <ThemeProvider
+                    attribute="class"
+                    defaultTheme="system"
+                    enableSystem
+                    disableTransitionOnChange
+                >
+                    {children}
+                </ThemeProvider>
+            </TRPCReactProvider>
             <Toaster />
         </ClerkProvider>
     );
