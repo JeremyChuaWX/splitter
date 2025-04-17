@@ -1,14 +1,7 @@
-"use client";
-
 import { ThemeToggle } from "@/components/theme-toggle";
-import {
-    Table,
-    TableHeader,
-    TableRow,
-    TableHead,
-    TableBody,
-    TableCell,
-} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { UserButton } from "@clerk/nextjs";
 
 export default function Page() {
@@ -18,8 +11,18 @@ export default function Page() {
     return (
         <div className="flex flex-col items-center p-6 h-svh">
             <Navbar />
-            <div className="pt-48 w-2/3">
-                <GroupTable />
+            <div className="flex flex-col items-center pt-48 w-full">
+                <div className="flex flex-col gap-6 items-center w-2/3">
+                    <div className="flex items-center w-full">
+                        <h2 className="flex-1 text-xl">Groups</h2>
+                        <Button variant="outline">Add Group</Button>
+                    </div>
+                    <div className="flex flex-col gap-4 w-full">
+                        <GroupCard />
+                        <GroupCard />
+                        <GroupCard />
+                    </div>
+                </div>
             </div>
         </div>
     );
@@ -37,25 +40,16 @@ function Navbar() {
     );
 }
 
-function GroupTable() {
+function GroupCard() {
     return (
-        <Table>
-            <TableHeader>
-                <TableRow>
-                    <TableHead className="w-[100px]">Invoice</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Method</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                <TableRow>
-                    <TableCell className="font-medium">INV001</TableCell>
-                    <TableCell>Paid</TableCell>
-                    <TableCell>Credit Card</TableCell>
-                    <TableCell className="text-right">$250.00</TableCell>
-                </TableRow>
-            </TableBody>
-        </Table>
+        <Card className="transition-all hover:scale-[101%] hover:cursor-pointer">
+            <CardContent className="flex items-center">
+                <div className="flex flex-1 gap-1 items-center">
+                    <CardTitle>Korea Trip</CardTitle>
+                    <Badge variant="secondary">Owner</Badge>
+                </div>
+                <span>$123.45</span>
+            </CardContent>
+        </Card>
     );
 }
