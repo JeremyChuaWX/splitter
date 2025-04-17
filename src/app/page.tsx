@@ -1,5 +1,6 @@
 "use client";
 
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -17,6 +18,7 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { UserButton } from "@clerk/nextjs";
 import { useForm } from "react-hook-form";
 
 export default function Page() {
@@ -36,7 +38,7 @@ export default function Page() {
 
     return (
         <div className="flex flex-col items-center p-6 h-svh">
-            <h1 className="w-full text-xl font-extrabold">Splitter</h1>
+            <Navbar />
             <div className="pt-48">
                 <Card className="w-[400px]">
                     <CardHeader>
@@ -96,6 +98,18 @@ export default function Page() {
                     </CardFooter>
                 </Card>
             </div>
+        </div>
+    );
+}
+
+function Navbar() {
+    return (
+        <div className="flex gap-2 w-full">
+            <h1 className="flex-1 w-full text-xl font-extrabold">Splitter</h1>
+            <div className="flex items-center shrink-0">
+                <UserButton />
+            </div>
+            <ThemeToggle />
         </div>
     );
 }
