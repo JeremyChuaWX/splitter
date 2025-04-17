@@ -30,7 +30,7 @@ export const item = pgTable("item", {
     id: uuid("id").primaryKey().defaultRandom(),
     groupId: uuid("group_id")
         .notNull()
-        .references(() => group.id),
+        .references(() => group.id, { onDelete: "restrict" }),
     data: json("data"),
     ...timestamps,
 });
@@ -40,10 +40,10 @@ export const groupMembership = pgTable(
     {
         userId: uuid("user_id")
             .notNull()
-            .references(() => user.id),
+            .references(() => user.id, { onDelete: "restrict" }),
         groupId: uuid("group_id")
             .notNull()
-            .references(() => group.id),
+            .references(() => group.id, { onDelete: "restrict" }),
         data: json("data"),
     },
     (t) => [primaryKey({ columns: [t.userId, t.groupId] })],
@@ -54,10 +54,10 @@ export const debit = pgTable(
     {
         userId: uuid("user_id")
             .notNull()
-            .references(() => user.id),
+            .references(() => user.id, { onDelete: "restrict" }),
         itemId: uuid("item_id")
             .notNull()
-            .references(() => item.id),
+            .references(() => item.id, { onDelete: "restrict" }),
         data: json("data"),
     },
     (t) => [primaryKey({ columns: [t.userId, t.itemId] })],
@@ -68,10 +68,10 @@ export const credit = pgTable(
     {
         userId: uuid("user_id")
             .notNull()
-            .references(() => user.id),
+            .references(() => user.id, { onDelete: "restrict" }),
         itemId: uuid("item_id")
             .notNull()
-            .references(() => item.id),
+            .references(() => item.id, { onDelete: "restrict" }),
         data: json("data"),
     },
     (t) => [primaryKey({ columns: [t.userId, t.itemId] })],
