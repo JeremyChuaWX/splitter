@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { HydrateClient, prefetch, trpc } from "@/trpc/server";
 import { Suspense } from "react";
-import { GroupsComponent } from "./group-component";
+import { GroupsComponent } from "./groups-component";
 
 export default function Page() {
     prefetch(trpc.group.getAll.queryOptions());
