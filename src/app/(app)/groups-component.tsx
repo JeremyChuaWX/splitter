@@ -12,6 +12,9 @@ export function GroupsComponent() {
 
     return (
         <div className="flex flex-col gap-4 w-full">
+            {groups.map((group) => (
+                <GroupCard key={group.group.id} />
+            ))}
             <GroupCard />
             <GroupCard />
             <GroupCard />

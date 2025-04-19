@@ -1,6 +1,6 @@
-import { Button } from "@/components/ui/button";
 import { HydrateClient, prefetch, trpc } from "@/trpc/server";
 import { Suspense } from "react";
+import { CreateGroupComponent } from "./create-group-component";
 import { GroupsComponent } from "./groups-component";
 
 export default function Page() {
@@ -22,7 +22,7 @@ function HeaderComponent() {
     return (
         <div className="flex items-center w-full">
             <h1 className="flex-1 text-2xl font-bold">Groups</h1>
-            <Button variant="outline">Add Group</Button>
+            <CreateGroupComponent />
         </div>
     );
 }
