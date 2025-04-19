@@ -35,7 +35,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-export function CreateGroupComponent() {
+export function CreateGroupButton() {
     const [open, setOpen] = useState(false);
     const isDesktop = useMediaQuery("(min-width: 768px)");
     const trpc = useTRPC();

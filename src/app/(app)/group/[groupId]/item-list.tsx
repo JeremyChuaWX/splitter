@@ -1,11 +1,10 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { useTRPC } from "@/trpc/client";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 
-export function ItemsComponent() {
+export function ItemList() {
     const { groupId } = useParams();
     const trpc = useTRPC();
     const { data: items } = useSuspenseQuery(
@@ -13,11 +12,10 @@ export function ItemsComponent() {
     );
 
     return (
-        <div className="w-full">
-            <div className="flex justify-between w-full">
-                <h2 className="text-xl font-medium">Items</h2>
-                <Button variant="outline">Add Item</Button>
-            </div>
-        </div>
+        <>
+            <div>item 1</div>
+            <div>item 2</div>
+            <div>item 3</div>
+        </>
     );
 }
