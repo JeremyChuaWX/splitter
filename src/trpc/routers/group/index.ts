@@ -1,15 +1,15 @@
 import { group, groupMembership } from "@/db/schema";
 import { createTRPCRouter, protectedProcedure } from "@/trpc";
 import { and, eq, isNotNull, sql } from "drizzle-orm";
-import { z } from "zod";
+import {
+    createGroupSchema,
+    deleteGroupSchema,
+    updateGroupSchema,
+} from "./validators";
 
 export const groupRouter = createTRPCRouter({
     create: protectedProcedure
-        .input(
-            z.object({
-                name: z.string(),
-            }),
-        )
+        .input(createGroupSchema)
         .mutation(async ({ ctx, input }) => {
             await ctx.db.insert(group).values({
                 data: {
@@ -30,12 +30,7 @@ export const groupRouter = createTRPCRouter({
             );
     }),
     update: protectedProcedure
-        .input(
-            z.object({
-                id: z.string(),
-                name: z.string().optional(),
-            }),
-        )
+        .input(updateGroupSchema)
         .mutation(async ({ ctx, input }) => {
             await ctx.db
                 .update(group)
@@ -47,11 +42,7 @@ export const groupRouter = createTRPCRouter({
                 .where(eq(group.id, input.id));
         }),
     delete: protectedProcedure
-        .input(
-            z.object({
-                id: z.string(),
-            }),
-        )
+        .input(deleteGroupSchema)
         .mutation(async ({ ctx, input }) => {
             await ctx.db
                 .update(group)

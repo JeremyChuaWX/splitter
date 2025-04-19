@@ -12,22 +12,45 @@ import {
     Drawer,
     DrawerClose,
     DrawerContent,
-    DrawerFooter,
     DrawerHeader,
     DrawerTitle,
     DrawerTrigger,
 } from "@/components/ui/drawer";
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { cn } from "@/lib/utils";
 import { useTRPC } from "@/trpc/client";
+import { createGroupSchema } from "@/trpc/routers/group/validators";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { DialogClose } from "@radix-ui/react-dialog";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 export function CreateGroupComponent() {
     const [open, setOpen] = useState(false);
     const isDesktop = useMediaQuery("(min-width: 768px)");
+    const trpc = useTRPC();
+    const { mutateAsync: createGroup, isPending } = useMutation(
+        trpc.group.create.mutationOptions(),
+    );
+    const form = useForm<z.infer<typeof createGroupSchema>>({
+        resolver: zodResolver(createGroupSchema),
+        defaultValues: {
+            name: "",
+        },
+    });
+    async function onSubmit(data: z.infer<typeof createGroupSchema>) {
+        await createGroup(data);
+    }
 
     if (isDesktop) {
         return (
@@ -39,7 +62,36 @@ export function CreateGroupComponent() {
                     <DialogHeader>
                         <DialogTitle>Create Group</DialogTitle>
                     </DialogHeader>
-                    <CreateGroupForm />
+                    <Form {...form}>
+                        <form
+                            onSubmit={form.handleSubmit(onSubmit)}
+                            className="grid gap-4 items-start"
+                        >
+                            <FormField
+                                control={form.control}
+                                name="name"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel htmlFor="name">
+                                            Group Name
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Input {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <div className="flex gap-2 justify-end w-full">
+                                <Button type="submit" disabled={isPending}>
+                                    Create Group
+                                </Button>
+                                <DialogClose asChild>
+                                    <Button variant="outline">Cancel</Button>
+                                </DialogClose>
+                            </div>
+                        </form>
+                    </Form>
                 </DialogContent>
             </Dialog>
         );
@@ -49,43 +101,42 @@ export function CreateGroupComponent() {
                 <DrawerTrigger asChild>
                     <Button variant="outline">Create Group</Button>
                 </DrawerTrigger>
-                <DrawerContent>
+                <DrawerContent className="h-[90svh]">
                     <DrawerHeader className="text-left">
                         <DrawerTitle>Create Group</DrawerTitle>
                     </DrawerHeader>
-                    <CreateGroupForm className="px-4" />
-                    <DrawerFooter className="pt-2">
-                        <DrawerClose asChild>
-                            <Button variant="outline">Cancel</Button>
-                        </DrawerClose>
-                    </DrawerFooter>
+                    <Form {...form}>
+                        <form
+                            onSubmit={form.handleSubmit(onSubmit)}
+                            className="grid gap-4 items-start"
+                        >
+                            <FormField
+                                control={form.control}
+                                name="name"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel htmlFor="name">
+                                            Group Name
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Input {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <div className="flex gap-2 justify-end w-full">
+                                <Button type="submit" disabled={isPending}>
+                                    Create Group
+                                </Button>
+                                <DrawerClose asChild>
+                                    <Button variant="outline">Cancel</Button>
+                                </DrawerClose>
+                            </div>
+                        </form>
+                    </Form>
                 </DrawerContent>
             </Drawer>
         );
     }
-}
-
-function CreateGroupForm({ className }: React.ComponentProps<"form">) {
-    const trpc = useTRPC();
-    const { mutateAsync: createGroup, isPending } = useMutation(
-        trpc.group.create.mutationOptions(),
-    );
-
-    return (
-        <form className={cn("grid items-start gap-4", className)}>
-            <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                    type="email"
-                    id="email"
-                    defaultValue="shadcn@example.com"
-                />
-            </div>
-            <div className="grid gap-2">
-                <Label htmlFor="username">Username</Label>
-                <Input id="username" defaultValue="@shadcn" />
-            </div>
-            <Button type="submit">Save changes</Button>
-        </form>
-    );
 }
