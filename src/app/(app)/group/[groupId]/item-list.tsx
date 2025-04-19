@@ -2,10 +2,8 @@
 
 import { useTRPC } from "@/trpc/client";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { useParams } from "next/navigation";
 
-export function ItemList() {
-    const { groupId } = useParams();
+export function ItemList({ groupId }: { groupId: string }) {
     const trpc = useTRPC();
     const { data: items } = useSuspenseQuery(
         trpc.item.getForGroup.queryOptions({ groupId: groupId as string }),

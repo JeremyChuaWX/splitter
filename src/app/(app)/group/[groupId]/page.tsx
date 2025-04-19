@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { HydrateClient, prefetch, trpc } from "@/trpc/server";
 import { Suspense } from "react";
 import { ItemList } from "./item-list";
+import { CreateItemButton } from "./create-item-button";
 
 type Props = {
     params: Promise<{ groupId: string }>;
@@ -15,7 +16,7 @@ export default async function Page({ params }: Props) {
         <HydrateClient>
             <div className="flex flex-col gap-6 pt-24 w-2/3">
                 <Header />
-                <ItemSection />
+                <ItemSection groupId={groupId} />
                 <BalanceSection />
             </div>
         </HydrateClient>
@@ -31,15 +32,15 @@ function Header() {
     );
 }
 
-function ItemSection() {
+function ItemSection({ groupId }: { groupId: string }) {
     return (
         <div className="w-full">
             <div className="flex justify-between w-full">
                 <h2 className="text-xl font-medium">Items</h2>
-                <Button variant="outline">Add Item</Button>
+                <CreateItemButton groupId={groupId} />
             </div>
             <Suspense fallback={<div>loading...</div>}>
-                <ItemList />
+                <ItemList groupId={groupId} />
             </Suspense>
         </div>
     );
