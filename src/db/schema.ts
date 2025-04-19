@@ -2,6 +2,7 @@ import {
     json,
     pgTable,
     primaryKey,
+    text,
     timestamp,
     uuid,
 } from "drizzle-orm/pg-core";
@@ -15,7 +16,7 @@ const timestamps = {
 };
 
 export const user = pgTable("user", {
-    id: uuid("id").primaryKey().defaultRandom(),
+    id: text("id").primaryKey(),
     data: json("data"),
     ...timestamps,
 });
@@ -38,7 +39,7 @@ export const item = pgTable("item", {
 export const groupMembership = pgTable(
     "group_membership",
     {
-        userId: uuid("user_id")
+        userId: text("user_id")
             .notNull()
             .references(() => user.id, { onDelete: "restrict" }),
         groupId: uuid("group_id")
@@ -52,7 +53,7 @@ export const groupMembership = pgTable(
 export const debit = pgTable(
     "debit",
     {
-        userId: uuid("user_id")
+        userId: text("user_id")
             .notNull()
             .references(() => user.id, { onDelete: "restrict" }),
         itemId: uuid("item_id")
@@ -66,7 +67,7 @@ export const debit = pgTable(
 export const credit = pgTable(
     "credit",
     {
-        userId: uuid("user_id")
+        userId: text("user_id")
             .notNull()
             .references(() => user.id, { onDelete: "restrict" }),
         itemId: uuid("item_id")
