@@ -1,5 +1,5 @@
 import { groupMembership } from "@/db/schema";
-import { protectedProcedure, createTRPCRouter } from "..";
+import { protectedProcedure, createTRPCRouter } from "@/trpc";
 import { z } from "zod";
 import { and, eq } from "drizzle-orm";
 

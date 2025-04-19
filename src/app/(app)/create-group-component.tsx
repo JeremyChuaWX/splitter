@@ -21,6 +21,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
+import { useTRPC } from "@/trpc/client";
+import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 
 export function CreateGroupComponent() {
@@ -64,6 +66,11 @@ export function CreateGroupComponent() {
 }
 
 function CreateGroupForm({ className }: React.ComponentProps<"form">) {
+    const trpc = useTRPC();
+    const { mutateAsync: createGroup, isPending } = useMutation(
+        trpc.group.create.mutationOptions(),
+    );
+
     return (
         <form className={cn("grid items-start gap-4", className)}>
             <div className="grid gap-2">

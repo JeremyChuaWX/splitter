@@ -1,7 +1,7 @@
 import { group, groupMembership } from "@/db/schema";
-import { protectedProcedure, createTRPCRouter } from "..";
-import { z } from "zod";
+import { createTRPCRouter, protectedProcedure } from "@/trpc";
 import { and, eq, isNotNull, sql } from "drizzle-orm";
+import { z } from "zod";
 
 export const groupRouter = createTRPCRouter({
     create: protectedProcedure

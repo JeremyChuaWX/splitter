@@ -1,5 +1,5 @@
 import { item } from "@/db/schema";
-import { protectedProcedure, createTRPCRouter } from "..";
+import { protectedProcedure, createTRPCRouter } from "@/trpc";
 import { z } from "zod";
 import { eq } from "drizzle-orm";
 
