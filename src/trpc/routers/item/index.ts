@@ -1,4 +1,4 @@
-import { item } from "@/db/schema";
+import { itemTable } from "@/db/schema";
 import { protectedProcedure, createTRPCRouter } from "@/trpc";
 import { z } from "zod";
 import { eq } from "drizzle-orm";
@@ -8,7 +8,7 @@ export const itemRouter = createTRPCRouter({
     create: protectedProcedure
         .input(createItemSchema)
         .mutation(async ({ ctx, input }) => {
-            await ctx.db.insert(item).values({
+            await ctx.db.insert(itemTable).values({
                 groupId: input.groupId,
                 data: {
                     name: input.name,
@@ -24,7 +24,7 @@ export const itemRouter = createTRPCRouter({
         .query(async ({ ctx, input }) => {
             return await ctx.db
                 .select()
-                .from(item)
-                .where(eq(item.groupId, input.groupId));
+                .from(itemTable)
+                .where(eq(itemTable.groupId, input.groupId));
         }),
 });

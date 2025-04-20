@@ -15,64 +15,52 @@ const timestamps = {
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
 };
 
-export const user = pgTable("user", {
-    id: text("id").primaryKey(),
-    data: json("data"),
-    ...timestamps,
-});
-
-export const group = pgTable("group", {
+export const groupTable = pgTable("group", {
     id: uuid("id").primaryKey().defaultRandom(),
     data: json("data"),
     ...timestamps,
 });
 
-export const item = pgTable("item", {
+export const itemTable = pgTable("item", {
     id: uuid("id").primaryKey().defaultRandom(),
     groupId: uuid("group_id")
         .notNull()
-        .references(() => group.id, { onDelete: "restrict" }),
+        .references(() => groupTable.id, { onDelete: "restrict" }),
     data: json("data"),
     ...timestamps,
 });
 
-export const groupMembership = pgTable(
+export const groupMembershipTable = pgTable(
     "group_membership",
     {
-        userId: text("user_id")
-            .notNull()
-            .references(() => user.id, { onDelete: "restrict" }),
+        userId: text("user_id").notNull(),
         groupId: uuid("group_id")
             .notNull()
-            .references(() => group.id, { onDelete: "restrict" }),
+            .references(() => groupTable.id, { onDelete: "restrict" }),
         data: json("data"),
     },
     (t) => [primaryKey({ columns: [t.userId, t.groupId] })],
 );
 
-export const debit = pgTable(
+export const debitTable = pgTable(
     "debit",
     {
-        userId: text("user_id")
-            .notNull()
-            .references(() => user.id, { onDelete: "restrict" }),
+        userId: text("user_id").notNull(),
         itemId: uuid("item_id")
             .notNull()
-            .references(() => item.id, { onDelete: "restrict" }),
+            .references(() => itemTable.id, { onDelete: "restrict" }),
         data: json("data"),
     },
     (t) => [primaryKey({ columns: [t.userId, t.itemId] })],
 );
 
-export const credit = pgTable(
+export const creditTable = pgTable(
     "credit",
     {
-        userId: text("user_id")
-            .notNull()
-            .references(() => user.id, { onDelete: "restrict" }),
+        userId: text("user_id").notNull(),
         itemId: uuid("item_id")
             .notNull()
-            .references(() => item.id, { onDelete: "restrict" }),
+            .references(() => itemTable.id, { onDelete: "restrict" }),
         data: json("data"),
     },
     (t) => [primaryKey({ columns: [t.userId, t.itemId] })],

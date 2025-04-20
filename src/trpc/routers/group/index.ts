@@ -1,4 +1,4 @@
-import { group, groupMembership } from "@/db/schema";
+import { groupTable, groupMembershipTable } from "@/db/schema";
 import { createTRPCRouter, protectedProcedure } from "@/trpc";
 import { and, eq, isNotNull, sql } from "drizzle-orm";
 import {
@@ -13,14 +13,14 @@ export const groupRouter = createTRPCRouter({
         .mutation(async ({ ctx, input }) => {
             await ctx.db.transaction(async (tx) => {
                 const [newGroup] = await tx
-                    .insert(group)
+                    .insert(groupTable)
                     .values({
                         data: {
                             name: input.name,
                         },
                     })
-                    .returning({ id: group.id });
-                await tx.insert(groupMembership).values({
+                    .returning({ id: groupTable.id });
+                await tx.insert(groupMembershipTable).values({
                     groupId: newGroup.id,
                     userId: ctx.auth.userId,
                     data: {
@@ -32,12 +32,15 @@ export const groupRouter = createTRPCRouter({
     getForUser: protectedProcedure.query(async ({ ctx }) => {
         return await ctx.db
             .select()
-            .from(group)
-            .innerJoin(groupMembership, eq(groupMembership.groupId, group.id))
+            .from(groupTable)
+            .innerJoin(
+                groupMembershipTable,
+                eq(groupMembershipTable.groupId, groupTable.id),
+            )
             .where(
                 and(
-                    eq(groupMembership.userId, ctx.auth.userId),
-                    isNotNull(group.deletedAt),
+                    eq(groupMembershipTable.userId, ctx.auth.userId),
+                    isNotNull(groupTable.deletedAt),
                 ),
             );
     }),
@@ -45,22 +48,22 @@ export const groupRouter = createTRPCRouter({
         .input(updateGroupSchema)
         .mutation(async ({ ctx, input }) => {
             await ctx.db
-                .update(group)
+                .update(groupTable)
                 .set({
                     data: {
                         name: input.name,
                     },
                 })
-                .where(eq(group.id, input.id));
+                .where(eq(groupTable.id, input.id));
         }),
     delete: protectedProcedure
         .input(deleteGroupSchema)
         .mutation(async ({ ctx, input }) => {
             await ctx.db
-                .update(group)
+                .update(groupTable)
                 .set({
                     deletedAt: sql`NOW()`,
                 })
-                .where(eq(group.id, input.id));
+                .where(eq(groupTable.id, input.id));
         }),
 });

@@ -1,4 +1,4 @@
-import { groupMembership } from "@/db/schema";
+import { groupMembershipTable } from "@/db/schema";
 import { protectedProcedure, createTRPCRouter } from "@/trpc";
 import { z } from "zod";
 import { and, eq } from "drizzle-orm";
@@ -11,7 +11,7 @@ export const userRouter = createTRPCRouter({
             }),
         )
         .mutation(async ({ ctx, input }) => {
-            await ctx.db.insert(groupMembership).values({
+            await ctx.db.insert(groupMembershipTable).values({
                 groupId: input.groupId,
                 userId: ctx.auth.userId,
             });
@@ -24,11 +24,11 @@ export const userRouter = createTRPCRouter({
         )
         .mutation(async ({ ctx, input }) => {
             await ctx.db
-                .delete(groupMembership)
+                .delete(groupMembershipTable)
                 .where(
                     and(
-                        eq(groupMembership.groupId, input.groupId),
-                        eq(groupMembership.userId, ctx.auth.userId),
+                        eq(groupMembershipTable.groupId, input.groupId),
+                        eq(groupMembershipTable.userId, ctx.auth.userId),
                     ),
                 );
         }),
