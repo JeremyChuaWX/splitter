@@ -8,7 +8,9 @@ import Link from "next/link";
 
 export function GroupList() {
     const trpc = useTRPC();
-    const { data: groups } = useSuspenseQuery(trpc.group.getForUser.queryOptions());
+    const { data: groups } = useSuspenseQuery(
+        trpc.group.getForUser.queryOptions(),
+    );
 
     return (
         <>

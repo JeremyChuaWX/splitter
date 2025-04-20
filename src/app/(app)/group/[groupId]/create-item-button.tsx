@@ -38,22 +38,6 @@ import { z } from "zod";
 export function CreateItemButton({ groupId }: { groupId: string }) {
     const [open, setOpen] = useState(false);
     const isDesktop = useMediaQuery("(min-width: 768px)");
-    const trpc = useTRPC();
-    const { mutateAsync: createItem, isPending } = useMutation(
-        trpc.item.create.mutationOptions(),
-    );
-    const form = useForm<z.infer<typeof createItemSchema>>({
-        resolver: zodResolver(createItemSchema),
-        defaultValues: {
-            name: "",
-        },
-    });
-    async function onSubmit(data: z.infer<typeof createItemSchema>) {
-        await createItem({
-            name: data.name,
-            groupId: groupId,
-        });
-    }
 
     if (isDesktop) {
         return (
@@ -65,36 +49,14 @@ export function CreateItemButton({ groupId }: { groupId: string }) {
                     <DialogHeader>
                         <DialogTitle>Add Item</DialogTitle>
                     </DialogHeader>
-                    <Form {...form}>
-                        <form
-                            onSubmit={form.handleSubmit(onSubmit)}
-                            className="grid gap-4 items-start"
-                        >
-                            <FormField
-                                control={form.control}
-                                name="name"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel htmlFor="name">
-                                            Item Name
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Input {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <div className="flex gap-2 justify-end w-full">
-                                <Button type="submit" disabled={isPending}>
-                                    Add Item
-                                </Button>
-                                <DialogClose asChild>
-                                    <Button variant="outline">Cancel</Button>
-                                </DialogClose>
-                            </div>
-                        </form>
-                    </Form>
+                    <AddItemForm
+                        groupId={groupId}
+                        close={
+                            <DialogClose asChild>
+                                <Button variant="outline">Cancel</Button>
+                            </DialogClose>
+                        }
+                    />
                 </DialogContent>
             </Dialog>
         );
@@ -108,38 +70,71 @@ export function CreateItemButton({ groupId }: { groupId: string }) {
                     <DrawerHeader className="text-left">
                         <DrawerTitle>Add Item</DrawerTitle>
                     </DrawerHeader>
-                    <Form {...form}>
-                        <form
-                            onSubmit={form.handleSubmit(onSubmit)}
-                            className="grid gap-4 items-start"
-                        >
-                            <FormField
-                                control={form.control}
-                                name="name"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel htmlFor="name">
-                                            Item Name
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Input {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <div className="flex gap-2 justify-end w-full">
-                                <Button type="submit" disabled={isPending}>
-                                    Add Item
-                                </Button>
-                                <DrawerClose asChild>
-                                    <Button variant="outline">Cancel</Button>
-                                </DrawerClose>
-                            </div>
-                        </form>
-                    </Form>
+                    <AddItemForm
+                        groupId={groupId}
+                        close={
+                            <DrawerClose asChild>
+                                <Button variant="outline">Cancel</Button>
+                            </DrawerClose>
+                        }
+                    />
                 </DrawerContent>
             </Drawer>
         );
     }
+}
+
+function AddItemForm({
+    groupId,
+    close,
+}: {
+    groupId: string;
+    close: React.ReactNode;
+}) {
+    const trpc = useTRPC();
+    const { mutateAsync: createItem, isPending } = useMutation(
+        trpc.item.create.mutationOptions(),
+    );
+    const createItemFormSchema = createItemSchema.omit({ groupId: true });
+    const form = useForm<z.infer<typeof createItemFormSchema>>({
+        resolver: zodResolver(createItemFormSchema),
+        defaultValues: {
+            name: "",
+        },
+    });
+    async function onSubmit(data: z.infer<typeof createItemFormSchema>) {
+        await createItem({
+            name: data.name,
+            groupId: groupId,
+        });
+    }
+
+    return (
+        <Form {...form}>
+            <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="grid gap-4 items-start"
+            >
+                <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel htmlFor="name">Item Name</FormLabel>
+                            <FormControl>
+                                <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <div className="flex gap-2 justify-end w-full">
+                    <Button type="submit" disabled={isPending}>
+                        Add Item
+                    </Button>
+                    {close}
+                </div>
+            </form>
+        </Form>
+    );
 }
