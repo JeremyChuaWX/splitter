@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { HydrateClient, prefetch, trpc } from "@/trpc/server";
 import { Suspense } from "react";
-import { ItemList } from "./item-list";
-import { AddItemButton } from "./create-item-button";
+import { ItemTable } from "./item-table";
+import { AddItemButton } from "./add-item-button";
 
 type Props = {
     params: Promise<{ groupId: string }>;
@@ -40,7 +40,7 @@ function ItemSection({ groupId }: { groupId: string }) {
                 <AddItemButton groupId={groupId} />
             </div>
             <Suspense fallback={<div>loading...</div>}>
-                <ItemList groupId={groupId} />
+                <ItemTable groupId={groupId} />
             </Suspense>
         </div>
     );

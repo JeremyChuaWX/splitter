@@ -1,7 +1,7 @@
 import { itemTable } from "@/db/schema";
 import { protectedProcedure, createTRPCRouter } from "@/trpc";
 import { z } from "zod";
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { createItemSchema } from "./validators";
 
 export const itemRouter = createTRPCRouter({
@@ -25,6 +25,7 @@ export const itemRouter = createTRPCRouter({
             return await ctx.db
                 .select()
                 .from(itemTable)
-                .where(eq(itemTable.groupId, input.groupId));
+                .where(eq(itemTable.groupId, input.groupId))
+                .orderBy(desc(itemTable.createdAt));
         }),
 });
