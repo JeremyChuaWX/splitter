@@ -6,34 +6,23 @@ import { useTRPC } from "@/trpc/client";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import Link from "next/link";
 
-const GROUP = {
-    group: {
-        id: "04c574ae-c4d7-4691-844f-0df353727f7d",
-        data: {
-            name: "Korea Trip",
-        },
-    },
-    group_membership: {
-        data: {
-            role: "owner",
-        },
-    },
-};
-
 export function GroupList() {
     const trpc = useTRPC();
     const { data: groups } = useSuspenseQuery(
         trpc.group.getForUser.queryOptions(),
     );
 
+    if (groups.length === 0) {
+        return (
+            <span className="text-center text-muted-foreground">No groups</span>
+        );
+    }
+
     return (
         <>
             {groups.map((group) => (
                 <GroupCard key={group.group.id} group={group} />
             ))}
-            <GroupCard group={GROUP} />
-            <GroupCard group={GROUP} />
-            <GroupCard group={GROUP} />
         </>
     );
 }
