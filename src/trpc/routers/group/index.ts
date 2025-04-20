@@ -1,6 +1,6 @@
 import { groupTable, groupMembershipTable } from "@/db/schema";
 import { createTRPCRouter, protectedProcedure } from "@/trpc";
-import { and, eq, isNotNull, sql } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import {
     createGroupSchema,
     deleteGroupSchema,
@@ -40,7 +40,7 @@ export const groupRouter = createTRPCRouter({
             .where(
                 and(
                     eq(groupMembershipTable.userId, ctx.auth.userId),
-                    isNotNull(groupTable.deletedAt),
+                    isNull(groupTable.deletedAt),
                 ),
             );
     }),

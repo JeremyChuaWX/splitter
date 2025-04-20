@@ -6,6 +6,20 @@ import { useTRPC } from "@/trpc/client";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import Link from "next/link";
 
+const GROUP = {
+    group: {
+        id: "04c574ae-c4d7-4691-844f-0df353727f7d",
+        data: {
+            name: "Korea Trip",
+        },
+    },
+    group_membership: {
+        data: {
+            role: "owner",
+        },
+    },
+};
+
 export function GroupList() {
     const trpc = useTRPC();
     const { data: groups } = useSuspenseQuery(
@@ -15,23 +29,25 @@ export function GroupList() {
     return (
         <>
             {groups.map((group) => (
-                <GroupCard key={group.group.id} />
+                <GroupCard key={group.group.id} group={group} />
             ))}
-            <GroupCard />
-            <GroupCard />
-            <GroupCard />
+            <GroupCard group={GROUP} />
+            <GroupCard group={GROUP} />
+            <GroupCard group={GROUP} />
         </>
     );
 }
 
-function GroupCard() {
+function GroupCard({ group }: { group: any }) {
     return (
-        <Link href="/group/e2866d49-03cf-4bf5-a668-da86db2ef1c9">
+        <Link href={`/group/${group.group.id}`}>
             <Card className="transition-all hover:scale-[101%] hover:cursor-pointer">
                 <CardContent className="flex items-center">
                     <div className="flex flex-1 gap-1 items-center">
-                        <CardTitle>Korea Trip</CardTitle>
-                        <Badge variant="secondary">Owner</Badge>
+                        <CardTitle>{group.group.data.name}</CardTitle>
+                        <Badge variant="secondary" className="capitalize">
+                            {group.group_membership.data.role}
+                        </Badge>
                     </div>
                     <span>$123.45</span>
                 </CardContent>

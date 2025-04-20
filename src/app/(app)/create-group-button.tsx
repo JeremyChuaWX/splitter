@@ -30,9 +30,10 @@ import { useTRPC } from "@/trpc/client";
 import { createGroupSchema } from "@/trpc/routers/group/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { DialogClose } from "@radix-ui/react-dialog";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
 export function CreateGroupButton() {
@@ -50,7 +51,8 @@ export function CreateGroupButton() {
                         <DialogTitle>Create Group</DialogTitle>
                     </DialogHeader>
                     <CreateGroupForm
-                        close={
+                        closeFunction={() => setOpen(false)}
+                        closeComponent={
                             <DialogClose asChild>
                                 <Button variant="outline">Cancel</Button>
                             </DialogClose>
@@ -70,7 +72,8 @@ export function CreateGroupButton() {
                         <DrawerTitle>Create Group</DrawerTitle>
                     </DrawerHeader>
                     <CreateGroupForm
-                        close={
+                        closeFunction={() => setOpen(false)}
+                        closeComponent={
                             <DrawerClose asChild>
                                 <Button variant="outline">Cancel</Button>
                             </DrawerClose>
@@ -82,10 +85,30 @@ export function CreateGroupButton() {
     }
 }
 
-function CreateGroupForm({ close }: { close: React.ReactNode }) {
+function CreateGroupForm({
+    closeFunction,
+    closeComponent,
+}: {
+    closeFunction: () => void;
+    closeComponent: React.ReactNode;
+}) {
     const trpc = useTRPC();
+    const queryClient = useQueryClient();
     const { mutateAsync: createGroup, isPending } = useMutation(
-        trpc.group.create.mutationOptions(),
+        trpc.group.create.mutationOptions({
+            onSuccess: async () => {
+                await queryClient.invalidateQueries({
+                    queryKey: trpc.group.getForUser.queryKey(),
+                });
+                toast.success("Created group successfully");
+                form.reset();
+                closeFunction();
+            },
+            onError: async (error) => {
+                toast.success("Error creating group");
+                console.error(error);
+            },
+        }),
     );
     const form = useForm<z.infer<typeof createGroupSchema>>({
         resolver: zodResolver(createGroupSchema),
@@ -120,7 +143,7 @@ function CreateGroupForm({ close }: { close: React.ReactNode }) {
                     <Button type="submit" disabled={isPending}>
                         Create Group
                     </Button>
-                    {close}
+                    {closeComponent}
                 </div>
             </form>
         </Form>
