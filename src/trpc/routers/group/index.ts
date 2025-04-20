@@ -11,10 +11,22 @@ export const groupRouter = createTRPCRouter({
     create: protectedProcedure
         .input(createGroupSchema)
         .mutation(async ({ ctx, input }) => {
-            await ctx.db.insert(group).values({
-                data: {
-                    name: input.name,
-                },
+            await ctx.db.transaction(async (tx) => {
+                const [newGroup] = await tx
+                    .insert(group)
+                    .values({
+                        data: {
+                            name: input.name,
+                        },
+                    })
+                    .returning({ id: group.id });
+                await tx.insert(groupMembership).values({
+                    groupId: newGroup.id,
+                    userId: ctx.auth.userId,
+                    data: {
+                        role: "owner",
+                    },
+                });
             });
         }),
     getForUser: protectedProcedure.query(async ({ ctx }) => {
