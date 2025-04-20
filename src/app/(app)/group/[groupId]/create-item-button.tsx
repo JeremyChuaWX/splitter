@@ -35,7 +35,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-export function CreateItemButton({ groupId }: { groupId: string }) {
+export function AddItemButton({ groupId }: { groupId: string }) {
     const [open, setOpen] = useState(false);
     const isDesktop = useMediaQuery("(min-width: 768px)");
 

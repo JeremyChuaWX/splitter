@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { HydrateClient, prefetch, trpc } from "@/trpc/server";
 import { Suspense } from "react";
 import { ItemList } from "./item-list";
-import { CreateItemButton } from "./create-item-button";
+import { AddItemButton } from "./create-item-button";
 
 type Props = {
     params: Promise<{ groupId: string }>;
@@ -37,7 +37,7 @@ function ItemSection({ groupId }: { groupId: string }) {
         <div className="w-full">
             <div className="flex justify-between w-full">
                 <h2 className="text-xl font-medium">Items</h2>
-                <CreateItemButton groupId={groupId} />
+                <AddItemButton groupId={groupId} />
             </div>
             <Suspense fallback={<div>loading...</div>}>
                 <ItemList groupId={groupId} />
