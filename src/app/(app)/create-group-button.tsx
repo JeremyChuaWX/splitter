@@ -26,11 +26,13 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import { cn } from "@/lib/utils";
 import { useTRPC } from "@/trpc/client";
 import { createGroupSchema } from "@/trpc/routers/group/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { LucideLoaderCircle } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -140,8 +142,17 @@ function CreateGroupForm({
                     )}
                 />
                 <div className="flex gap-2 justify-end w-full">
-                    <Button type="submit" disabled={isPending}>
-                        Create Group
+                    <Button
+                        type="submit"
+                        disabled={isPending}
+                        className="relative"
+                    >
+                        {isPending && (
+                            <LucideLoaderCircle className="absolute top-1/2 left-1/2 animate-spin transform -translate-x-1/2 -translate-y-1/2" />
+                        )}
+                        <span className={cn(isPending ? "invisible" : "")}>
+                            Create Group
+                        </span>
                     </Button>
                     {closeComponent}
                 </div>
