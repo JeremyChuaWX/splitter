@@ -1,6 +1,6 @@
 import { groupTable, groupMembershipTable } from "@/db/schema";
 import { createTRPCRouter, protectedProcedure } from "@/trpc";
-import { and, eq, isNull, sql } from "drizzle-orm";
+import { and, desc, eq, isNull, sql } from "drizzle-orm";
 import {
     createGroupSchema,
     deleteGroupSchema,
@@ -42,7 +42,8 @@ export const groupRouter = createTRPCRouter({
                     eq(groupMembershipTable.userId, ctx.auth.userId),
                     isNull(groupTable.deletedAt),
                 ),
-            );
+            )
+            .orderBy(desc(groupTable.createdAt));
     }),
     update: protectedProcedure
         .input(updateGroupSchema)
