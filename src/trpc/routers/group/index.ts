@@ -17,7 +17,7 @@ export const groupRouter = createTRPCRouter({
                 },
             });
         }),
-    getAll: protectedProcedure.query(async ({ ctx }) => {
+    getForUser: protectedProcedure.query(async ({ ctx }) => {
         return await ctx.db
             .select()
             .from(group)

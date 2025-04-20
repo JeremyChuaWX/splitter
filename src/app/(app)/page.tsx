@@ -5,7 +5,7 @@ import { CreateGroupButton } from "./create-group-button";
 import { GroupList } from "./group-list";
 
 export default function Page() {
-    prefetch(trpc.group.getAll.queryOptions());
+    prefetch(trpc.group.getForUser.queryOptions());
 
     return (
         <HydrateClient>
