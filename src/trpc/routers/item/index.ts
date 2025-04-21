@@ -12,6 +12,7 @@ export const itemRouter = createTRPCRouter({
                 groupId: input.groupId,
                 data: {
                     name: input.name,
+                    amount: input.amount,
                 },
             });
         }),

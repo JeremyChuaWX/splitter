@@ -33,6 +33,7 @@ import { Input } from "@/components/ui/input";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
 import { useTRPC } from "@/trpc/client";
+import { addMembersSchema } from "@/trpc/routers/group/validators";
 import { createItemSchema } from "@/trpc/routers/item/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -60,7 +61,7 @@ const SETTINGS = {
     } satisfies SettingsItem,
     "add-member": {
         title: "Add Member",
-        content: AddItemForm,
+        content: AddMemberForm,
     } satisfies SettingsItem,
 };
 
@@ -144,7 +145,7 @@ function SettingsContainer({
             closeFunction={() => onOpenChange(false)}
             closeComponent={closeComponent}
         />
-    ) : null; // Render null if no component is provided
+    ) : null;
 
     if (isDesktop) {
         return (
@@ -199,12 +200,14 @@ function AddItemForm({
         resolver: zodResolver(createItemFormSchema),
         defaultValues: {
             name: "",
+            amount: "",
         },
     });
     async function onSubmit(data: z.infer<typeof createItemFormSchema>) {
         await createItem({
-            name: data.name,
             groupId: groupId,
+            name: data.name,
+            amount: data.amount,
         });
     }
 
@@ -227,6 +230,19 @@ function AddItemForm({
                         </FormItem>
                     )}
                 />
+                <FormField
+                    control={form.control}
+                    name="amount"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Item Amount</FormLabel>
+                            <FormControl>
+                                <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
                 <div className="flex gap-2 justify-end w-full">
                     <Button
                         type="submit"
@@ -237,7 +253,83 @@ function AddItemForm({
                             <LucideLoaderCircle className="absolute inset-0 m-auto w-4 h-4 animate-spin" />
                         )}
                         <span className={cn(isPending ? "invisible" : "")}>
-                            Create Group
+                            Add Item
+                        </span>
+                    </Button>
+                    {closeComponent}
+                </div>
+            </form>
+        </Form>
+    );
+}
+
+function AddMemberForm({
+    groupId,
+    closeFunction,
+    closeComponent,
+}: SettingsContentProps) {
+    const trpc = useTRPC();
+    const queryClient = useQueryClient();
+    const { mutateAsync: createItem, isPending } = useMutation(
+        trpc.group.addMembers.mutationOptions({
+            onSuccess: async () => {
+                await queryClient.invalidateQueries({
+                    queryKey: trpc.item.getForGroup.queryKey(),
+                });
+                toast.success("Added members successfully");
+                form.reset();
+                closeFunction();
+            },
+            onError: async (error) => {
+                toast.success("Error adding members");
+                console.error(error);
+            },
+        }),
+    );
+    const addMembersFormSchema = addMembersSchema.omit({ groupId: true });
+    const form = useForm<z.infer<typeof addMembersFormSchema>>({
+        resolver: zodResolver(addMembersFormSchema),
+        defaultValues: {
+            userIds: [],
+        },
+    });
+    async function onSubmit(data: z.infer<typeof addMembersFormSchema>) {
+        await createItem({
+            groupId: groupId,
+            userIds: data.userIds,
+        });
+    }
+
+    return (
+        <Form {...form}>
+            <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="grid gap-4 items-start"
+            >
+                <FormField
+                    control={form.control}
+                    name="userIds"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Item Name</FormLabel>
+                            <FormControl>
+                                <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <div className="flex gap-2 justify-end w-full">
+                    <Button
+                        type="submit"
+                        disabled={isPending}
+                        className="relative"
+                    >
+                        {isPending && (
+                            <LucideLoaderCircle className="absolute inset-0 m-auto w-4 h-4 animate-spin" />
+                        )}
+                        <span className={cn(isPending ? "invisible" : "")}>
+                            Add Member
                         </span>
                     </Button>
                     {closeComponent}

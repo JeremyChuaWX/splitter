@@ -5,10 +5,15 @@ export const createGroupSchema = z.object({
 });
 
 export const updateGroupSchema = z.object({
-    id: z.string(),
+    groupId: z.string().uuid(),
     name: z.string().optional(),
 });
 
 export const deleteGroupSchema = z.object({
-    id: z.string(),
+    groupId: z.string().uuid(),
+});
+
+export const addMembersSchema = z.object({
+    groupId: z.string().uuid(),
+    userIds: z.array(z.string()).nonempty(),
 });

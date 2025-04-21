@@ -39,9 +39,6 @@ export function ItemTable({ groupId }: { groupId: string }) {
                 {items.map((item) => (
                     <ItemRow key={item.id} item={item} />
                 ))}
-                <ItemRow item={ITEM} />
-                <ItemRow item={ITEM} />
-                <ItemRow item={ITEM} />
             </TableBody>
             <TableFooter>
                 <TableRow>

@@ -30,7 +30,7 @@ export function GroupList() {
 function GroupCard({ group }: { group: any }) {
     return (
         <Link href={`/group/${group.group.id}`}>
-            <Card className="transition-all hover:scale-[101%] hover:cursor-pointer">
+            <Card className="transition-all hover:cursor-pointer hover:bg-background">
                 <CardContent className="flex items-center">
                     <div className="flex flex-1 gap-1 items-center">
                         <CardTitle>{group.group.data.name}</CardTitle>
