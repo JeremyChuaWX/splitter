@@ -24,12 +24,28 @@ import {
 import {
     Form,
     FormControl,
+    FormDescription,
     FormField,
     FormItem,
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
 import { useTRPC } from "@/trpc/client";
@@ -37,9 +53,14 @@ import { addMembersSchema } from "@/trpc/routers/group/validators";
 import { createItemSchema } from "@/trpc/routers/item/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { LucideLoaderCircle, LucideSettings } from "lucide-react";
+import {
+    LucideLoaderCircle,
+    LucidePlus,
+    LucideSettings,
+    LucideTrash2,
+} from "lucide-react";
 import { useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -59,9 +80,9 @@ const SETTINGS = {
         title: "Add Item",
         content: AddItemForm,
     } satisfies SettingsItem,
-    "add-member": {
-        title: "Add Member",
-        content: AddMemberForm,
+    "add-members": {
+        title: "Add Members",
+        content: AddMembersForm,
     } satisfies SettingsItem,
 };
 
@@ -150,7 +171,7 @@ function SettingsContainer({
     if (isDesktop) {
         return (
             <Dialog open={open} onOpenChange={onOpenChange}>
-                <DialogContent className="sm:max-w-[425px]">
+                <DialogContent className="sm:max-w-[500px]">
                     <DialogHeader>
                         <DialogTitle>{title}</DialogTitle>
                     </DialogHeader>
@@ -222,7 +243,7 @@ function AddItemForm({
                     name="name"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Item Name</FormLabel>
+                            <FormLabel>Name</FormLabel>
                             <FormControl>
                                 <Input {...field} />
                             </FormControl>
@@ -235,7 +256,7 @@ function AddItemForm({
                     name="amount"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Item Amount</FormLabel>
+                            <FormLabel>Amount</FormLabel>
                             <FormControl>
                                 <Input {...field} />
                             </FormControl>
@@ -263,73 +284,234 @@ function AddItemForm({
     );
 }
 
-function AddMemberForm({
+function AddMembersForm({
     groupId,
     closeFunction,
     closeComponent,
 }: SettingsContentProps) {
     const trpc = useTRPC();
     const queryClient = useQueryClient();
-    const { mutateAsync: createItem, isPending } = useMutation(
+    const [currentEmail, setCurrentEmail] = useState("");
+    const [currentRole, setCurrentRole] = useState<"admin" | "member">(
+        "member",
+    );
+
+    const addMembersFormSchema = addMembersSchema.omit({ groupId: true });
+
+    const form = useForm<z.infer<typeof addMembersFormSchema>>({
+        resolver: zodResolver(addMembersFormSchema),
+        defaultValues: {
+            members: [],
+        },
+        mode: "onChange",
+    });
+
+    const { fields, append, remove } = useFieldArray({
+        control: form.control,
+        name: "members",
+    });
+
+    const { mutateAsync: addMembers, isPending } = useMutation(
         trpc.group.addMembers.mutationOptions({
             onSuccess: async () => {
-                await queryClient.invalidateQueries({
-                    queryKey: trpc.item.getForGroup.queryKey(),
-                });
-                toast.success("Added members successfully");
+                await queryClient.invalidateQueries({});
+                toast.success("Members added successfully");
                 form.reset();
+                setCurrentEmail("");
+                setCurrentRole("member");
                 closeFunction();
             },
-            onError: async (error) => {
-                toast.success("Error adding members");
+            onError: (error) => {
+                toast.error("Error adding members");
                 console.error(error);
             },
         }),
     );
-    const addMembersFormSchema = addMembersSchema.omit({ groupId: true });
-    const form = useForm<z.infer<typeof addMembersFormSchema>>({
-        resolver: zodResolver(addMembersFormSchema),
-        defaultValues: {
-            userIds: [],
-        },
-    });
+
     async function onSubmit(data: z.infer<typeof addMembersFormSchema>) {
-        await createItem({
+        await addMembers({
             groupId: groupId,
-            userIds: data.userIds,
+            members: data.members,
         });
     }
 
+    const handleAddMemberToList = () => {
+        const emailValidation = z.string().email().safeParse(currentEmail);
+        if (!emailValidation.success) {
+            toast.error("Invalid Email");
+            return;
+        }
+
+        const existingEmails = form
+            .getValues("members")
+            .map((m) => m.email.toLowerCase());
+        if (existingEmails.includes(currentEmail.toLowerCase())) {
+            toast.error("Duplicate Email");
+            return;
+        }
+
+        append({ email: currentEmail, role: currentRole });
+
+        setCurrentEmail("");
+        setCurrentRole("member");
+    };
+
     return (
         <Form {...form}>
-            <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="grid gap-4 items-start"
-            >
+            <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-6">
+                <div className="grid grid-cols-1 gap-2 items-end sm:grid-cols-[1fr_auto_auto]">
+                    <FormItem>
+                        <FormLabel>Email Address</FormLabel>
+                        <FormControl>
+                            <Input
+                                placeholder="new.member@example.com"
+                                value={currentEmail}
+                                onChange={(e) =>
+                                    setCurrentEmail(e.target.value)
+                                }
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
+                                        e.preventDefault();
+                                        handleAddMemberToList();
+                                    }
+                                }}
+                            />
+                        </FormControl>
+                    </FormItem>
+
+                    <FormItem>
+                        <FormLabel>Role</FormLabel>
+                        <Select
+                            value={currentRole}
+                            onValueChange={(value: "admin" | "member") =>
+                                setCurrentRole(value)
+                            }
+                        >
+                            <FormControl>
+                                <SelectTrigger className="w-[110px]">
+                                    <SelectValue placeholder="Select role" />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                <SelectItem value="admin">Admin</SelectItem>
+                                <SelectItem value="member">Member</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </FormItem>
+
+                    <Button
+                        type="button"
+                        size="icon"
+                        variant="outline"
+                        onClick={handleAddMemberToList}
+                        aria-label="Add member to list"
+                        disabled={!currentEmail}
+                    >
+                        <LucidePlus className="w-4 h-4" />
+                    </Button>
+                </div>
+
                 <FormField
                     control={form.control}
-                    name="userIds"
-                    render={({ field }) => (
+                    name="members"
+                    render={() => (
                         <FormItem>
-                            <FormLabel>Item Name</FormLabel>
-                            <FormControl>
-                                <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
+                            {/* Optional: Label/Description for the table */}
+                            {fields.length > 0 && (
+                                <FormLabel>Members to Add</FormLabel>
+                            )}
+                            {fields.length > 0 ? (
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Email</TableHead>
+                                            <TableHead className="w-[130px]">
+                                                Role
+                                            </TableHead>
+                                            <TableHead className="w-[50px]"></TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {fields.map((field, index) => (
+                                            <TableRow key={field.id}>
+                                                <TableCell className="font-medium break-all">
+                                                    {form.getValues(
+                                                        `members.${index}.email`,
+                                                    )}
+                                                </TableCell>
+
+                                                <TableCell>
+                                                    <FormField
+                                                        control={form.control}
+                                                        name={`members.${index}.role`}
+                                                        render={({ field }) => (
+                                                            <FormItem>
+                                                                <Select
+                                                                    onValueChange={
+                                                                        field.onChange
+                                                                    }
+                                                                    defaultValue={
+                                                                        field.value
+                                                                    }
+                                                                >
+                                                                    <FormControl>
+                                                                        <SelectTrigger>
+                                                                            <SelectValue placeholder="Select role" />
+                                                                        </SelectTrigger>
+                                                                    </FormControl>
+                                                                    <SelectContent>
+                                                                        <SelectItem value="admin">
+                                                                            Admin
+                                                                        </SelectItem>
+                                                                        <SelectItem value="member">
+                                                                            Member
+                                                                        </SelectItem>
+                                                                    </SelectContent>
+                                                                </Select>
+                                                            </FormItem>
+                                                        )}
+                                                    />
+                                                </TableCell>
+
+                                                <TableCell className="text-right">
+                                                    <Button
+                                                        type="button"
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        onClick={() =>
+                                                            remove(index)
+                                                        }
+                                                        aria-label="Remove member"
+                                                    >
+                                                        <LucideTrash2 className="w-4 h-4 text-destructive" />
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            ) : (
+                                <FormDescription>
+                                    Use the fields above to add members to the
+                                    list.
+                                </FormDescription>
+                            )}
                         </FormItem>
                     )}
                 />
-                <div className="flex gap-2 justify-end w-full">
+
+                <div className="flex gap-2 justify-end pt-4 w-full">
                     <Button
                         type="submit"
-                        disabled={isPending}
+                        disabled={isPending || fields.length === 0}
                         className="relative"
                     >
                         {isPending && (
                             <LucideLoaderCircle className="absolute inset-0 m-auto w-4 h-4 animate-spin" />
                         )}
                         <span className={cn(isPending ? "invisible" : "")}>
-                            Add Member
+                            Add {fields.length > 0 ? fields.length : ""} Member
+                            {fields.length !== 1 ? "s" : ""}
                         </span>
                     </Button>
                     {closeComponent}

@@ -12,13 +12,6 @@ import {
     TableFooter,
 } from "@/components/ui/table";
 
-const ITEM = {
-    data: {
-        name: "Hotel",
-        amount: "123.45",
-    },
-};
-
 export function ItemTable({ groupId }: { groupId: string }) {
     const trpc = useTRPC();
     const { data: items } = useSuspenseQuery(
