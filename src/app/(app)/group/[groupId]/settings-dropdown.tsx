@@ -50,64 +50,66 @@ type SettingsContentProps = {
 
 type SettingsItem = {
     title: React.ReactNode;
-    content: (props: SettingsContentProps) => React.ReactNode;
+    content: React.ComponentType<SettingsContentProps>;
 };
 
 const SETTINGS = {
     "add-item": {
-        title: "add-item title",
+        title: "Add Item",
         content: AddItemForm,
     } satisfies SettingsItem,
     "add-member": {
-        title: "add-member title",
+        title: "Add Member",
         content: AddItemForm,
     } satisfies SettingsItem,
 };
 
+type SettingsKey = keyof typeof SETTINGS;
+
 export function SettingsDropdown({ groupId }: { groupId: string }) {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [itemOpen, setItemOpen] = useState(false);
-    const [content, setContent] = useState<keyof typeof SETTINGS>();
+    const [contentKey, setContentKey] = useState<SettingsKey>();
     const currentItem = useMemo(() => {
-        if (content) {
-            return SETTINGS[content];
+        if (contentKey) {
+            return SETTINGS[contentKey];
         }
-    }, [content]);
+        return undefined;
+    }, [contentKey]);
+    function handleOpenItem(key: SettingsKey) {
+        setDropdownOpen(false);
+        setContentKey(key);
+        setItemOpen(true);
+    }
 
     return (
         <>
             <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
-                <DropdownMenuTrigger>
-                    <LucideSettings className="text-primary" />
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                        <LucideSettings className="text-primary" />
+                    </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                        onClick={() => {
-                            setDropdownOpen(false);
-                            setItemOpen(true);
-                            setContent("add-item");
-                        }}
-                    >
-                        Add Item
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                        onClick={() => {
-                            setDropdownOpen(false);
-                            setItemOpen(true);
-                            setContent("add-member");
-                        }}
-                    >
-                        Add Member
-                    </DropdownMenuItem>
+                    {(Object.keys(SETTINGS) as SettingsKey[]).map((key) => (
+                        <DropdownMenuItem
+                            key={key}
+                            onClick={() => handleOpenItem(key)}
+                        >
+                            {SETTINGS[key].title} {/* Use title from config */}
+                        </DropdownMenuItem>
+                    ))}
                 </DropdownMenuContent>
             </DropdownMenu>
-            <SettingsContainer
-                groupId={groupId}
-                open={itemOpen}
-                onOpenChange={setItemOpen}
-                title={currentItem?.title}
-                content={currentItem?.content}
-            />
+            {currentItem && (
+                <SettingsContainer
+                    groupId={groupId}
+                    open={itemOpen}
+                    onOpenChange={setItemOpen}
+                    title={currentItem.title}
+                    Content={currentItem.content}
+                />
+            )}
         </>
     );
 }
@@ -117,15 +119,32 @@ function SettingsContainer({
     open,
     onOpenChange,
     title,
-    content,
+    Content,
 }: {
     groupId: string;
     open: boolean;
     onOpenChange: (open: boolean) => void;
     title: React.ReactNode;
-    content: (props: SettingsContentProps) => React.ReactNode | undefined;
+    Content: React.ComponentType<SettingsContentProps> | undefined;
 }) {
     const isDesktop = useMediaQuery("(min-width: 768px)");
+
+    const closeComponent = useMemo(() => {
+        const CloseButton = <Button variant="outline">Cancel</Button>;
+        return isDesktop ? (
+            <DialogClose asChild>{CloseButton}</DialogClose>
+        ) : (
+            <DrawerClose asChild>{CloseButton}</DrawerClose>
+        );
+    }, [isDesktop]);
+
+    const renderedContent = Content ? (
+        <Content
+            groupId={groupId}
+            closeFunction={() => onOpenChange(false)}
+            closeComponent={closeComponent}
+        />
+    ) : null; // Render null if no component is provided
 
     if (isDesktop) {
         return (
@@ -134,16 +153,7 @@ function SettingsContainer({
                     <DialogHeader>
                         <DialogTitle>{title}</DialogTitle>
                     </DialogHeader>
-                    {content &&
-                        content({
-                            groupId: groupId,
-                            closeFunction: () => onOpenChange(false),
-                            closeComponent: (
-                                <DialogClose asChild>
-                                    <Button variant="outline">Cancel</Button>
-                                </DialogClose>
-                            ),
-                        })}
+                    {renderedContent}
                 </DialogContent>
             </Dialog>
         );
@@ -151,19 +161,10 @@ function SettingsContainer({
         return (
             <Drawer open={open} onOpenChange={onOpenChange}>
                 <DrawerContent className="h-[90svh]">
-                    <DrawerHeader>
+                    <DrawerHeader className="text-left">
                         <DrawerTitle>{title}</DrawerTitle>
                     </DrawerHeader>
-                    {content &&
-                        content({
-                            groupId: groupId,
-                            closeFunction: () => onOpenChange(false),
-                            closeComponent: (
-                                <DrawerClose asChild>
-                                    <Button variant="outline">Cancel</Button>
-                                </DrawerClose>
-                            ),
-                        })}
+                    <div className="overflow-auto p-6">{renderedContent}</div>
                 </DrawerContent>
             </Drawer>
         );
@@ -218,7 +219,7 @@ function AddItemForm({
                     name="name"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel htmlFor="name">Item Name</FormLabel>
+                            <FormLabel>Item Name</FormLabel>
                             <FormControl>
                                 <Input {...field} />
                             </FormControl>
@@ -233,7 +234,7 @@ function AddItemForm({
                         className="relative"
                     >
                         {isPending && (
-                            <LucideLoaderCircle className="absolute top-1/2 left-1/2 animate-spin transform -translate-x-1/2 -translate-y-1/2" />
+                            <LucideLoaderCircle className="absolute inset-0 m-auto w-4 h-4 animate-spin" />
                         )}
                         <span className={cn(isPending ? "invisible" : "")}>
                             Create Group
