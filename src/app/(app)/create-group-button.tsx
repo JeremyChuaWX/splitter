@@ -133,7 +133,7 @@ function CreateGroupForm({
                     name="name"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel htmlFor="name">Group Name</FormLabel>
+                            <FormLabel>Group Name</FormLabel>
                             <FormControl>
                                 <Input {...field} />
                             </FormControl>
