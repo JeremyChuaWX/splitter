@@ -49,14 +49,16 @@ export const groupRouter = createTRPCRouter({
     update: protectedProcedure
         .input(updateGroupSchema)
         .mutation(async ({ ctx, input }) => {
-            await ctx.db
-                .update(groupTable)
-                .set({
-                    data: {
-                        name: input.name,
-                    },
-                })
-                .where(eq(groupTable.id, input.groupId));
+            if (input.name) {
+                await ctx.db
+                    .update(groupTable)
+                    .set({
+                        data: {
+                            name: input.name,
+                        },
+                    })
+                    .where(eq(groupTable.id, input.groupId));
+            }
         }),
     delete: protectedProcedure
         .input(deleteGroupSchema)

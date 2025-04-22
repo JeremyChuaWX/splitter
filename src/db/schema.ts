@@ -17,18 +17,22 @@ const timestamps = {
 
 export const groupTable = pgTable("group", {
     id: uuid("id").primaryKey().defaultRandom(),
-    data: json("data"),
+    data: json("data").$type<{ name: string }>().notNull(),
     ...timestamps,
 });
+
+export type Group = typeof groupTable.$inferSelect;
 
 export const itemTable = pgTable("item", {
     id: uuid("id").primaryKey().defaultRandom(),
     groupId: uuid("group_id")
         .notNull()
         .references(() => groupTable.id, { onDelete: "restrict" }),
-    data: json("data"),
+    data: json("data").$type<{ name: string; amount: string }>().notNull(),
     ...timestamps,
 });
+
+export type Item = typeof itemTable.$inferSelect;
 
 export const groupMembershipTable = pgTable(
     "group_membership",
@@ -37,10 +41,12 @@ export const groupMembershipTable = pgTable(
         groupId: uuid("group_id")
             .notNull()
             .references(() => groupTable.id, { onDelete: "restrict" }),
-        data: json("data"),
+        data: json("data").$type<{ role: string }>().notNull(),
     },
     (t) => [primaryKey({ columns: [t.userId, t.groupId] })],
 );
+
+export type GroupMembership = typeof groupMembershipTable.$inferSelect;
 
 export const debitTable = pgTable(
     "debit",
@@ -49,10 +55,12 @@ export const debitTable = pgTable(
         itemId: uuid("item_id")
             .notNull()
             .references(() => itemTable.id, { onDelete: "restrict" }),
-        data: json("data"),
+        data: json("data").notNull(),
     },
     (t) => [primaryKey({ columns: [t.userId, t.itemId] })],
 );
+
+export type Debit = typeof debitTable.$inferSelect;
 
 export const creditTable = pgTable(
     "credit",
@@ -61,7 +69,9 @@ export const creditTable = pgTable(
         itemId: uuid("item_id")
             .notNull()
             .references(() => itemTable.id, { onDelete: "restrict" }),
-        data: json("data"),
+        data: json("data").notNull(),
     },
     (t) => [primaryKey({ columns: [t.userId, t.itemId] })],
 );
+
+export type Credit = typeof creditTable.$inferSelect;

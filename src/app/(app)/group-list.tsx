@@ -2,6 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import type { Group, GroupMembership } from "@/db/schema";
 import { useTRPC } from "@/trpc/client";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import Link from "next/link";
@@ -27,7 +28,11 @@ export function GroupList() {
     );
 }
 
-function GroupCard({ group }: { group: any }) {
+function GroupCard({
+    group,
+}: {
+    group: { group: Group; group_membership: GroupMembership };
+}) {
     return (
         <Link href={`/group/${group.group.id}`}>
             <Card className="transition-all hover:cursor-pointer hover:bg-background">

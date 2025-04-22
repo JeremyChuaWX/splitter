@@ -11,6 +11,7 @@ import {
     TableRow,
     TableFooter,
 } from "@/components/ui/table";
+import type { Item } from "@/db/schema";
 
 export function ItemTable({ groupId }: { groupId: string }) {
     const trpc = useTRPC();
@@ -43,7 +44,7 @@ export function ItemTable({ groupId }: { groupId: string }) {
     );
 }
 
-function ItemRow({ item }: { item: any }) {
+function ItemRow({ item }: { item: Item }) {
     return (
         <TableRow>
             <TableCell className="font-medium">{item.data.name}</TableCell>
