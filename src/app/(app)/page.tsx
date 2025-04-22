@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { Skeleton } from "@/components/ui/skeleton";
 import { HydrateClient, prefetch, trpc } from "@/trpc/server";
 import { Suspense } from "react";
