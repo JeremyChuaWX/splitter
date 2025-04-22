@@ -70,7 +70,7 @@ export const groupRouter = createTRPCRouter({
         }),
     addMembers: protectedProcedure
         .input(addMembersSchema)
-        .mutation(async ({ ctx, input }) => {
+        .mutation(async ({ /*ctx,*/ input }) => {
             console.log(input);
             // await ctx.db.insert(groupMembershipTable).values(
             //     input.userIds.map((userId) => ({
