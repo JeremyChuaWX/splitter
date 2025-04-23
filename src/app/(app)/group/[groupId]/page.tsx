@@ -1,7 +1,17 @@
 import { HydrateClient, prefetch, trpc } from "@/trpc/server";
 import { Suspense } from "react";
-import { ItemTable } from "./item-table";
+import { ItemRows } from "./item-rows";
 import { SettingsDropdown } from "./settings-dropdown";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+    TableFooter,
+} from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Props = {
     params: Promise<{ groupId: string }>;
@@ -37,10 +47,55 @@ function ItemSection({ groupId }: { groupId: string }) {
             <div className="flex justify-between w-full">
                 <h2 className="text-xl font-medium">Items</h2>
             </div>
-            <Suspense fallback={<div>loading...</div>}>
-                <ItemTable groupId={groupId} />
-            </Suspense>
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead></TableHead>
+                        <TableHead>Paid By</TableHead>
+                        <TableHead>To Pay</TableHead>
+                        <TableHead className="text-right">Amount</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    <Suspense
+                        fallback={
+                            <>
+                                <ItemRowSkeleton />
+                                <ItemRowSkeleton />
+                                <ItemRowSkeleton />
+                            </>
+                        }
+                    >
+                        <ItemRows groupId={groupId} />
+                    </Suspense>
+                </TableBody>
+                <TableFooter>
+                    <TableRow>
+                        <TableHead colSpan={3}>Total Amount</TableHead>
+                        <TableCell className="text-right">$123.45</TableCell>
+                    </TableRow>
+                </TableFooter>
+            </Table>
         </div>
+    );
+}
+
+function ItemRowSkeleton() {
+    return (
+        <TableRow>
+            <TableCell>
+                <Skeleton className="h-5" />
+            </TableCell>
+            <TableCell>
+                <Skeleton className="h-5" />
+            </TableCell>
+            <TableCell>
+                <Skeleton className="h-5" />
+            </TableCell>
+            <TableCell>
+                <Skeleton className="h-5" />
+            </TableCell>
+        </TableRow>
     );
 }
 
