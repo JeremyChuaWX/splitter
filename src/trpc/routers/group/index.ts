@@ -2,7 +2,6 @@ import { groupTable, groupMembershipTable } from "@/db/schema";
 import { createTRPCRouter, protectedProcedure } from "@/trpc";
 import { and, desc, eq, isNull, sql } from "drizzle-orm";
 import {
-    addMembersSchema,
     createGroupSchema,
     deleteGroupSchema,
     updateGroupSchema,
@@ -69,19 +68,5 @@ export const groupRouter = createTRPCRouter({
                     deletedAt: sql`NOW()`,
                 })
                 .where(eq(groupTable.id, input.groupId));
-        }),
-    addMembers: protectedProcedure
-        .input(addMembersSchema)
-        .mutation(async ({ /*ctx,*/ input }) => {
-            console.log(input);
-            // await ctx.db.insert(groupMembershipTable).values(
-            //     input.userIds.map((userId) => ({
-            //         groupId: input.groupId,
-            //         userId: userId,
-            //         data: {
-            //             role: "member",
-            //         },
-            //     })),
-            // );
         }),
 });

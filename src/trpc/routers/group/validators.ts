@@ -12,15 +12,3 @@ export const updateGroupSchema = z.object({
 export const deleteGroupSchema = z.object({
     groupId: z.string().uuid(),
 });
-
-export const addMembersSchema = z.object({
-    groupId: z.string().uuid(),
-    members: z
-        .array(
-            z.object({
-                email: z.string().email(),
-                role: z.enum(["admin", "member"]),
-            }),
-        )
-        .nonempty(),
-});

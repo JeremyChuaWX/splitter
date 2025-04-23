@@ -49,10 +49,10 @@ import {
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
 import { useTRPC } from "@/trpc/client";
-import { addMembersSchema } from "@/trpc/routers/group/validators";
 import { createItemSchema } from "@/trpc/routers/item/validators";
+import { createManyMembersSchema } from "@/trpc/routers/member/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
     LucideLoaderCircle,
     LucidePlus,
@@ -200,6 +200,11 @@ function AddItemForm({
 }: SettingsContentProps) {
     const trpc = useTRPC();
     const queryClient = useQueryClient();
+    const { data: members } = useQuery(
+        trpc.member.getForGroup.queryOptions({
+            groupId: groupId,
+        }),
+    );
     const { mutateAsync: createItem, isPending } = useMutation(
         trpc.item.create.mutationOptions({
             onSuccess: async () => {
@@ -222,6 +227,8 @@ function AddItemForm({
         defaultValues: {
             name: "",
             amount: "",
+            payees: [],
+            payers: [],
         },
     });
     async function onSubmit(data: z.infer<typeof createItemFormSchema>) {
@@ -296,7 +303,9 @@ function AddMembersForm({
         "member",
     );
 
-    const addMembersFormSchema = addMembersSchema.omit({ groupId: true });
+    const addMembersFormSchema = createManyMembersSchema.omit({
+        groupId: true,
+    });
 
     const form = useForm<z.infer<typeof addMembersFormSchema>>({
         resolver: zodResolver(addMembersFormSchema),
@@ -311,8 +320,8 @@ function AddMembersForm({
         name: "members",
     });
 
-    const { mutateAsync: addMembers, isPending } = useMutation(
-        trpc.group.addMembers.mutationOptions({
+    const { mutateAsync: createManyMembers, isPending } = useMutation(
+        trpc.member.createMany.mutationOptions({
             onSuccess: async () => {
                 await queryClient.invalidateQueries({});
                 toast.success("Members added successfully");
@@ -329,7 +338,7 @@ function AddMembersForm({
     );
 
     async function onSubmit(data: z.infer<typeof addMembersFormSchema>) {
-        await addMembers({
+        await createManyMembers({
             groupId: groupId,
             members: data.members,
         });
