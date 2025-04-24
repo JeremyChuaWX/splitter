@@ -7,6 +7,14 @@ import {
     uuid,
 } from "drizzle-orm/pg-core";
 
+export const ROLE = {
+    user: 1,
+    admin: 2,
+    owner: 3,
+} as const;
+
+export type Role = keyof typeof ROLE;
+
 const timestamps = {
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdateFn(
@@ -41,7 +49,7 @@ export const groupMembershipTable = pgTable(
         groupId: uuid("group_id")
             .notNull()
             .references(() => groupTable.id, { onDelete: "restrict" }),
-        data: json("data").$type<{ role: string }>().notNull(),
+        data: json("data").$type<{ role: Role }>().notNull(),
     },
     (t) => [primaryKey({ columns: [t.userId, t.groupId] })],
 );
@@ -55,7 +63,7 @@ export const debitTable = pgTable(
         itemId: uuid("item_id")
             .notNull()
             .references(() => itemTable.id, { onDelete: "restrict" }),
-        data: json("data").notNull(),
+        data: json("data").$type<{ amount: string }>().notNull(),
     },
     (t) => [primaryKey({ columns: [t.userId, t.itemId] })],
 );
@@ -69,7 +77,7 @@ export const creditTable = pgTable(
         itemId: uuid("item_id")
             .notNull()
             .references(() => itemTable.id, { onDelete: "restrict" }),
-        data: json("data").notNull(),
+        data: json("data").$type<{ amount: string }>().notNull(),
     },
     (t) => [primaryKey({ columns: [t.userId, t.itemId] })],
 );
