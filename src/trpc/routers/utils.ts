@@ -1,5 +1,5 @@
-import { type Role, ROLE } from "@/db/schema";
+import { type Role, ROLE_MAP } from "@/db/schema";
 
 export function roleAllowed(role: Role, allowed: Role) {
-    return ROLE[role] >= ROLE[allowed];
+    return ROLE_MAP[role] >= ROLE_MAP[allowed];
 }
