@@ -1,5 +1,6 @@
 import {
     json,
+    numeric,
     pgTable,
     primaryKey,
     text,
@@ -39,7 +40,7 @@ export const itemTable = pgTable("item", {
         .notNull()
         .references(() => groupTable.id, { onDelete: "restrict" }),
     name: text("name"),
-    amount: text("amount"),
+    amount: numeric("amount", { mode: "bigint", precision: 10, scale: 2 }),
     // data: json("data").$type<{}>().notNull(),
     data: json("data").notNull(),
     ...timestamps,
@@ -68,7 +69,7 @@ export const debitTable = pgTable(
         itemId: uuid("item_id")
             .notNull()
             .references(() => itemTable.id, { onDelete: "restrict" }),
-        amount: text("amount"),
+        amount: numeric("amount", { mode: "bigint", precision: 10, scale: 2 }),
         // data: json("data").$type<{}>().notNull(),
         data: json("data").notNull(),
     },
@@ -84,7 +85,7 @@ export const creditTable = pgTable(
         itemId: uuid("item_id")
             .notNull()
             .references(() => itemTable.id, { onDelete: "restrict" }),
-        amount: text("amount"),
+        amount: numeric("amount", { mode: "bigint", precision: 10, scale: 2 }),
         // data: json("data").$type<{}>().notNull(),
         data: json("data").notNull(),
     },
