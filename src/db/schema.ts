@@ -26,7 +26,7 @@ const timestamps = {
 
 export const groupTable = pgTable("group", {
     id: uuid("id").primaryKey().defaultRandom(),
-    name: text("name"),
+    name: text("name").notNull(),
     // data: json("data").$type<{}>().notNull(),
     data: json("data").notNull(),
     ...timestamps,
@@ -39,8 +39,12 @@ export const itemTable = pgTable("item", {
     groupId: uuid("group_id")
         .notNull()
         .references(() => groupTable.id, { onDelete: "restrict" }),
-    name: text("name"),
-    amount: numeric("amount", { mode: "bigint", precision: 10, scale: 2 }),
+    name: text("name").notNull(),
+    amount: numeric("amount", {
+        mode: "bigint",
+        precision: 10,
+        scale: 2,
+    }).notNull(),
     // data: json("data").$type<{}>().notNull(),
     data: json("data").notNull(),
     ...timestamps,
@@ -69,7 +73,11 @@ export const debitTable = pgTable(
         itemId: uuid("item_id")
             .notNull()
             .references(() => itemTable.id, { onDelete: "restrict" }),
-        amount: numeric("amount", { mode: "bigint", precision: 10, scale: 2 }),
+        amount: numeric("amount", {
+            mode: "bigint",
+            precision: 10,
+            scale: 2,
+        }).notNull(),
         // data: json("data").$type<{}>().notNull(),
         data: json("data").notNull(),
     },
@@ -85,7 +93,11 @@ export const creditTable = pgTable(
         itemId: uuid("item_id")
             .notNull()
             .references(() => itemTable.id, { onDelete: "restrict" }),
-        amount: numeric("amount", { mode: "bigint", precision: 10, scale: 2 }),
+        amount: numeric("amount", {
+            mode: "bigint",
+            precision: 10,
+            scale: 2,
+        }).notNull(),
         // data: json("data").$type<{}>().notNull(),
         data: json("data").notNull(),
     },
