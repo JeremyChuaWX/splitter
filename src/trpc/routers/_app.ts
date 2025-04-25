@@ -20,9 +20,8 @@ export const appRouter = createTRPCRouter({
                 const [group] = await tx
                     .insert(groupTable)
                     .values({
-                        data: {
-                            name: input.name,
-                        },
+                        name: input.name,
+                        data: {},
                     })
                     .returning({ id: groupTable.id });
                 await tx.insert(groupMembershipTable).values({
@@ -40,8 +39,8 @@ export const appRouter = createTRPCRouter({
         return await ctx.db
             .select({
                 id: groupTable.id,
-                name: sql<string>`${groupTable.data}->>'name'`,
-                role: sql<string>`${groupMembershipTable}->>'role'`,
+                name: groupTable.name,
+                role: sql<Role>`${groupMembershipTable}->>'role'`,
             })
             .from(groupTable)
             .innerJoin(
@@ -60,7 +59,7 @@ export const appRouter = createTRPCRouter({
         const groups = ctx.db
             .select({
                 id: groupTable.id,
-                name: sql<string>`${groupTable.data}->>'name'`,
+                name: groupTable.name,
             })
             .from(groupTable)
             .innerJoin(
@@ -79,7 +78,7 @@ export const appRouter = createTRPCRouter({
                 groupId: groups.id,
                 groupName: groups.name,
                 userId: groupMembershipTable.userId,
-                userRole: sql<string>`${groupMembershipTable.data}->>'role'`,
+                userRole: sql<Role>`${groupMembershipTable.data}->>'role'`,
             })
             .from(groups)
             .innerJoin(
@@ -92,7 +91,7 @@ export const appRouter = createTRPCRouter({
                 name: string;
                 members: {
                     id: string;
-                    role: string;
+                    role: Role;
                 }[];
             }
         >();
@@ -121,7 +120,7 @@ export const appRouter = createTRPCRouter({
             const check = await ctx.db
                 .select({
                     id: groupTable.id,
-                    name: sql<string>`${groupTable.data}->>'name'`,
+                    name: groupTable.name,
                 })
                 .from(groupTable)
                 .innerJoin(
@@ -145,7 +144,7 @@ export const appRouter = createTRPCRouter({
             const members = await ctx.db
                 .select({
                     id: groupMembershipTable.userId,
-                    role: sql<string>`${groupMembershipTable.data}->>'role'`,
+                    role: sql<Role>`${groupMembershipTable.data}->>'role'`,
                 })
                 .from(groupMembershipTable)
                 .where(eq(groupMembershipTable.groupId, group.id));
@@ -193,9 +192,7 @@ export const appRouter = createTRPCRouter({
             await ctx.db
                 .update(groupTable)
                 .set({
-                    data: {
-                        name: input.name,
-                    },
+                    name: input.name,
                 })
                 .where(
                     and(
@@ -437,37 +434,37 @@ export const appRouter = createTRPCRouter({
                     .insert(itemTable)
                     .values({
                         groupId: input.groupId,
-                        data: {
-                            name: input.name,
-                            amount: input.amount,
-                        },
+                        name: input.name,
+                        amount: input.amount,
+                        data: {},
                     })
                     .returning({ id: itemTable.id });
                 if (input.creditUserIds.length > 0) {
-                    const creditAmount = ""; // input.amount / input.creditUserIds.length
+                    const creditAmount = BigInt(0); // input.amount / input.creditUserIds.length
                     await tx.insert(creditTable).values(
                         input.creditUserIds.map(
                             (userId) =>
                                 ({
                                     itemId: item.id,
                                     userId: userId,
-                                    data: {
-                                        amount: creditAmount,
-                                    },
+                                    amount: creditAmount,
+                                    data: {},
                                 }) satisfies typeof creditTable.$inferInsert,
                         ),
                     );
                 }
                 if (input.debitUserIds.length > 0) {
-                    const debitAmount = ""; // input.amount / input.debitUserIds.length
+                    const debitAmount = BigInt(0); // input.amount / input.debitUserIds.length
                     await tx.insert(debitTable).values(
-                        input.debitUserIds.map((userId) => ({
-                            itemId: item.id,
-                            userId: userId,
-                            data: {
-                                amount: debitAmount,
-                            },
-                        })),
+                        input.debitUserIds.map(
+                            (userId) =>
+                                ({
+                                    itemId: item.id,
+                                    userId: userId,
+                                    amount: debitAmount,
+                                    data: {},
+                                }) satisfies typeof debitTable.$inferInsert,
+                        ),
                     );
                 }
             });

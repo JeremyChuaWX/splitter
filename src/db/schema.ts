@@ -8,13 +8,15 @@ import {
     uuid,
 } from "drizzle-orm/pg-core";
 
-export const ROLE = {
+export const ROLES = ["user", "admin", "owner"] as const;
+
+export type Role = (typeof ROLES)[number];
+
+export const ROLE_MAP: Readonly<Record<Role, number>> = {
     user: 1,
     admin: 2,
     owner: 3,
 } as const;
-
-export type Role = keyof typeof ROLE;
 
 const timestamps = {
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
