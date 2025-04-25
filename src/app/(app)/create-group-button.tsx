@@ -28,7 +28,7 @@ import { Input } from "@/components/ui/input";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
 import { useTRPC } from "@/trpc/client";
-import { createGroupSchema } from "@/trpc/routers/group/validators";
+import { createGroupSchema } from "@/trpc/routers/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -97,10 +97,10 @@ function CreateGroupForm({
     const trpc = useTRPC();
     const queryClient = useQueryClient();
     const { mutateAsync: createGroup, isPending } = useMutation(
-        trpc.group.create.mutationOptions({
+        trpc.createGroup.mutationOptions({
             onSuccess: async () => {
                 await queryClient.invalidateQueries({
-                    queryKey: trpc.group.getForUser.queryKey(),
+                    queryKey: trpc.getGroups.queryKey(),
                 });
                 toast.success("Created group successfully");
                 form.reset();

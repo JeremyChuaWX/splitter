@@ -40,7 +40,7 @@ export const appRouter = createTRPCRouter({
             .select({
                 id: groupTable.id,
                 name: groupTable.name,
-                role: sql<Role>`${groupMembershipTable}->>'role'`,
+                role: sql<Role>`${groupMembershipTable.data}->>'role'`,
             })
             .from(groupTable)
             .innerJoin(
@@ -55,71 +55,11 @@ export const appRouter = createTRPCRouter({
             );
     }),
 
-    getDetailedGroups: protectedProcedure.query(async ({ ctx }) => {
-        const groups = ctx.db
-            .select({
-                id: groupTable.id,
-                name: groupTable.name,
-            })
-            .from(groupTable)
-            .innerJoin(
-                groupMembershipTable,
-                eq(groupMembershipTable.groupId, groupTable.id),
-            )
-            .where(
-                and(
-                    eq(groupMembershipTable.userId, ctx.auth.userId),
-                    isNull(groupTable.deletedAt),
-                ),
-            )
-            .as("groups");
-        const members = await ctx.db
-            .select({
-                groupId: groups.id,
-                groupName: groups.name,
-                userId: groupMembershipTable.userId,
-                userRole: sql<Role>`${groupMembershipTable.data}->>'role'`,
-            })
-            .from(groups)
-            .innerJoin(
-                groupMembershipTable,
-                eq(groupMembershipTable.groupId, groups.id),
-            );
-        const result = new Map<
-            string,
-            {
-                name: string;
-                members: {
-                    id: string;
-                    role: Role;
-                }[];
-            }
-        >();
-        for (const member of members) {
-            if (!result.has(member.groupId)) {
-                result.set(member.groupId, {
-                    name: member.groupName,
-                    members: [],
-                });
-            }
-            const group = result.get(member.groupId)!;
-            group.members.push({
-                id: member.userId,
-                role: member.userRole,
-            });
-        }
-        return Array.from(result.entries(), ([groupId, group]) => ({
-            id: groupId,
-            ...group,
-        }));
-    }),
-
-    getDetailedGroup: protectedProcedure
+    getGroup: protectedProcedure
         .input(v.getDetailedGroupSchema)
         .query(async ({ ctx, input }) => {
             const check = await ctx.db
                 .select({
-                    id: groupTable.id,
                     name: groupTable.name,
                 })
                 .from(groupTable)
@@ -141,17 +81,7 @@ export const appRouter = createTRPCRouter({
                 });
             }
             const [group] = check;
-            const members = await ctx.db
-                .select({
-                    id: groupMembershipTable.userId,
-                    role: sql<Role>`${groupMembershipTable.data}->>'role'`,
-                })
-                .from(groupMembershipTable)
-                .where(eq(groupMembershipTable.groupId, group.id));
-            return {
-                members: members,
-                ...group,
-            };
+            return group;
         }),
 
     updateGroup: protectedProcedure
@@ -162,7 +92,7 @@ export const appRouter = createTRPCRouter({
             }
             const check = await ctx.db
                 .select({
-                    role: sql<Role>`${groupMembershipTable.data}->>role`,
+                    role: sql<Role>`${groupMembershipTable.data}->>'role'`,
                 })
                 .from(groupTable)
                 .innerJoin(
@@ -207,7 +137,7 @@ export const appRouter = createTRPCRouter({
         .mutation(async ({ ctx, input }) => {
             const check = await ctx.db
                 .select({
-                    role: sql<Role>`${groupMembershipTable.data}->>role`,
+                    role: sql<Role>`${groupMembershipTable.data}->>'role'`,
                 })
                 .from(groupTable)
                 .innerJoin(
@@ -242,6 +172,61 @@ export const appRouter = createTRPCRouter({
                 .where(eq(groupTable.id, input.groupId));
         }),
 
+    getMembers: protectedProcedure
+        .input(v.getMembersSchema)
+        .query(async ({ ctx, input }) => {
+            const check = await ctx.db
+                .select({
+                    role: sql<Role>`${groupMembershipTable.data}->>'role'`,
+                })
+                .from(groupTable)
+                .innerJoin(
+                    groupMembershipTable,
+                    eq(groupMembershipTable.groupId, groupTable.id),
+                )
+                .where(
+                    and(
+                        eq(groupMembershipTable.userId, ctx.auth.userId),
+                        eq(groupTable.id, input.groupId),
+                        isNull(groupTable.deletedAt),
+                    ),
+                );
+            if (check.length !== 1) {
+                throw new TRPCError({
+                    message: "group not found",
+                    code: "NOT_FOUND",
+                });
+            }
+            const members = await ctx.db
+                .select({
+                    id: groupMembershipTable.userId,
+                    role: sql<Role>`${groupMembershipTable.data}->>'role'`,
+                })
+                .from(groupMembershipTable)
+                .where(
+                    and(
+                        eq(groupTable.id, input.groupId),
+                        isNull(groupTable.deletedAt),
+                    ),
+                );
+            const clerkUsers = (
+                await ctx.clerk.users.getUserList({
+                    userId: members.map((member) => member.id),
+                })
+            ).data;
+            const emailMap = new Map<string, string | undefined>();
+            for (const clerkUser of clerkUsers) {
+                emailMap.set(
+                    clerkUser.id,
+                    clerkUser.primaryEmailAddress?.emailAddress,
+                );
+            }
+            return members.map((member) => ({
+                email: emailMap.get(member.id),
+                ...member,
+            }));
+        }),
+
     addMembers: protectedProcedure
         .input(v.addMembersSchema)
         .mutation(async ({ ctx, input }) => {
@@ -250,7 +235,7 @@ export const appRouter = createTRPCRouter({
             }
             const check = await ctx.db
                 .select({
-                    role: sql<Role>`${groupMembershipTable.data}->>role`,
+                    role: sql<Role>`${groupMembershipTable.data}->>'role'`,
                 })
                 .from(groupTable)
                 .innerJoin(
@@ -306,7 +291,7 @@ export const appRouter = createTRPCRouter({
             }
             const check = await ctx.db
                 .select({
-                    role: sql<Role>`${groupMembershipTable.data}->>role`,
+                    role: sql<Role>`${groupMembershipTable.data}->>'role'`,
                 })
                 .from(groupTable)
                 .innerJoin(
@@ -351,7 +336,7 @@ export const appRouter = createTRPCRouter({
             }
             const check = await ctx.db
                 .select({
-                    role: sql<Role>`${groupMembershipTable.data}->>role`,
+                    role: sql<Role>`${groupMembershipTable.data}->>'role'`,
                 })
                 .from(groupTable)
                 .innerJoin(
@@ -397,12 +382,48 @@ export const appRouter = createTRPCRouter({
             });
         }),
 
+    getItems: protectedProcedure
+        .input(v.getItemsSchema)
+        .query(async ({ ctx, input }) => {
+            const check = await ctx.db
+                .select({
+                    role: sql<Role>`${groupMembershipTable.data}->>'role'`,
+                })
+                .from(groupTable)
+                .innerJoin(
+                    groupMembershipTable,
+                    eq(groupMembershipTable.groupId, groupTable.id),
+                )
+                .where(
+                    and(
+                        eq(groupMembershipTable.userId, ctx.auth.userId),
+                        eq(groupTable.id, input.groupId),
+                        isNull(groupTable.deletedAt),
+                    ),
+                );
+            if (check.length !== 1) {
+                throw new TRPCError({
+                    message: "group not found",
+                    code: "NOT_FOUND",
+                });
+            }
+            return await ctx.db
+                .select({
+                    id: itemTable.id,
+                    name: itemTable.name,
+                    amount: itemTable.amount,
+                    data: itemTable.data,
+                })
+                .from(itemTable)
+                .where(eq(itemTable.groupId, input.groupId));
+        }),
+
     addItem: protectedProcedure
         .input(v.addItemSchema)
         .mutation(async ({ ctx, input }) => {
             const check = await ctx.db
                 .select({
-                    role: sql<Role>`${groupMembershipTable.data}->>role`,
+                    role: sql<Role>`${groupMembershipTable.data}->>'role'`,
                 })
                 .from(groupTable)
                 .innerJoin(
@@ -478,7 +499,7 @@ export const appRouter = createTRPCRouter({
             }
             const check = await ctx.db
                 .select({
-                    role: sql<Role>`${groupMembershipTable.data}->>role`,
+                    role: sql<Role>`${groupMembershipTable.data}->>'role'`,
                 })
                 .from(groupTable)
                 .innerJoin(

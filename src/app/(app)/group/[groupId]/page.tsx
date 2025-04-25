@@ -19,7 +19,7 @@ type Props = {
 
 export default async function Page({ params }: Props) {
     const { groupId } = await params;
-    prefetch(trpc.item.getForGroup.queryOptions({ groupId: groupId }));
+    prefetch(trpc.getItems.queryOptions({ groupId: groupId }));
 
     return (
         <HydrateClient>

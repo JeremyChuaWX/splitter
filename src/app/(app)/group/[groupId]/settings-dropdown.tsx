@@ -46,11 +46,11 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import { Role } from "@/db/schema";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
 import { useTRPC } from "@/trpc/client";
-import { createItemSchema } from "@/trpc/routers/item/validators";
-import { createManyMembersSchema } from "@/trpc/routers/member/validators";
+import { addItemSchema, addMembersSchema } from "@/trpc/routers/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -201,15 +201,17 @@ function AddItemForm({
     const trpc = useTRPC();
     const queryClient = useQueryClient();
     const { data: members } = useQuery(
-        trpc.member.getForGroup.queryOptions({
+        trpc.getMembers.queryOptions({
             groupId: groupId,
         }),
     );
-    const { mutateAsync: createItem, isPending } = useMutation(
-        trpc.item.create.mutationOptions({
+    const { mutateAsync: addItem, isPending } = useMutation(
+        trpc.addItem.mutationOptions({
             onSuccess: async () => {
                 await queryClient.invalidateQueries({
-                    queryKey: trpc.item.getForGroup.queryKey(),
+                    queryKey: trpc.getItems.queryKey({
+                        groupId: groupId,
+                    }),
                 });
                 toast.success("Added item successfully");
                 form.reset();
@@ -221,21 +223,23 @@ function AddItemForm({
             },
         }),
     );
-    const createItemFormSchema = createItemSchema.omit({ groupId: true });
-    const form = useForm<z.infer<typeof createItemFormSchema>>({
-        resolver: zodResolver(createItemFormSchema),
+    const addItemFormSchema = addItemSchema.omit({ groupId: true });
+    const form = useForm<z.infer<typeof addItemFormSchema>>({
+        resolver: zodResolver(addItemFormSchema),
         defaultValues: {
             name: "",
-            amount: "",
-            payees: [],
-            payers: [],
+            amount: BigInt(0),
+            creditUserIds: [],
+            debitUserIds: [],
         },
     });
-    async function onSubmit(data: z.infer<typeof createItemFormSchema>) {
-        await createItem({
+    async function onSubmit(data: z.infer<typeof addItemFormSchema>) {
+        await addItem({
             groupId: groupId,
             name: data.name,
             amount: data.amount,
+            creditUserIds: data.creditUserIds,
+            debitUserIds: data.debitUserIds,
         });
     }
 
@@ -299,11 +303,9 @@ function AddMembersForm({
     const trpc = useTRPC();
     const queryClient = useQueryClient();
     const [currentEmail, setCurrentEmail] = useState("");
-    const [currentRole, setCurrentRole] = useState<"admin" | "member">(
-        "member",
-    );
+    const [currentRole, setCurrentRole] = useState<Role>("user");
 
-    const addMembersFormSchema = createManyMembersSchema.omit({
+    const addMembersFormSchema = addMembersSchema.omit({
         groupId: true,
     });
 
@@ -320,14 +322,14 @@ function AddMembersForm({
         name: "members",
     });
 
-    const { mutateAsync: createManyMembers, isPending } = useMutation(
-        trpc.member.createMany.mutationOptions({
+    const { mutateAsync: addMembers, isPending } = useMutation(
+        trpc.addMembers.mutationOptions({
             onSuccess: async () => {
                 await queryClient.invalidateQueries({});
                 toast.success("Members added successfully");
                 form.reset();
                 setCurrentEmail("");
-                setCurrentRole("member");
+                setCurrentRole("user");
                 closeFunction();
             },
             onError: (error) => {
@@ -338,7 +340,7 @@ function AddMembersForm({
     );
 
     async function onSubmit(data: z.infer<typeof addMembersFormSchema>) {
-        await createManyMembers({
+        await addMembers({
             groupId: groupId,
             members: data.members,
         });
@@ -362,7 +364,7 @@ function AddMembersForm({
         append({ email: currentEmail, role: currentRole });
 
         setCurrentEmail("");
-        setCurrentRole("member");
+        setCurrentRole("user");
     };
 
     return (
@@ -392,8 +394,8 @@ function AddMembersForm({
                         <FormLabel>Role</FormLabel>
                         <Select
                             value={currentRole}
-                            onValueChange={(value: "admin" | "member") =>
-                                setCurrentRole(value)
+                            onValueChange={(value) =>
+                                setCurrentRole(value as Role)
                             }
                         >
                             <FormControl>
@@ -403,7 +405,7 @@ function AddMembersForm({
                             </FormControl>
                             <SelectContent>
                                 <SelectItem value="admin">Admin</SelectItem>
-                                <SelectItem value="member">Member</SelectItem>
+                                <SelectItem value="user">Member</SelectItem>
                             </SelectContent>
                         </Select>
                     </FormItem>

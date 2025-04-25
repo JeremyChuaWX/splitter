@@ -18,6 +18,10 @@ export const deleteGroupSchema = z.object({
     groupId: z.string(),
 });
 
+export const getMembersSchema = z.object({
+    groupId: z.string(),
+});
+
 export const addMembersSchema = z.object({
     groupId: z.string(),
     members: z.array(
@@ -41,6 +45,10 @@ export const updateMembersRolesSchema = z.object({
             role: z.enum(ROLES),
         }),
     ),
+});
+
+export const getItemsSchema = z.object({
+    groupId: z.string(),
 });
 
 export const addItemSchema = z.object({

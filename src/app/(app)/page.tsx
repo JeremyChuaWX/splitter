@@ -1,4 +1,4 @@
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { HydrateClient, prefetch, trpc } from "@/trpc/server";
@@ -7,7 +7,7 @@ import { CreateGroupButton } from "./create-group-button";
 import { GroupList } from "./group-list";
 
 export default function Page() {
-    prefetch(trpc.group.getForUser.queryOptions());
+    prefetch(trpc.getGroups.queryOptions());
 
     return (
         <HydrateClient>
