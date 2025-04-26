@@ -203,27 +203,21 @@ export const appRouter = createTRPCRouter({
                     role: sql<Role>`${groupMembershipTable.data}->>'role'`,
                 })
                 .from(groupMembershipTable)
-                .where(
-                    and(
-                        eq(groupTable.id, input.groupId),
-                        isNull(groupTable.deletedAt),
-                    ),
-                );
+                .where(eq(groupMembershipTable.groupId, input.groupId));
             const clerkUsers = (
                 await ctx.clerk.users.getUserList({
                     userId: members.map((member) => member.id),
+                    orderBy: "email_address",
                 })
             ).data;
-            const emailMap = new Map<string, string | undefined>();
-            for (const clerkUser of clerkUsers) {
-                emailMap.set(
-                    clerkUser.id,
-                    clerkUser.primaryEmailAddress?.emailAddress,
-                );
+            const roleMap = new Map<string, Role>();
+            for (const member of members) {
+                roleMap.set(member.id, member.role);
             }
-            return members.map((member) => ({
-                email: emailMap.get(member.id),
-                ...member,
+            return clerkUsers.map((clerkUser) => ({
+                id: clerkUser.id,
+                email: clerkUser.primaryEmailAddress?.emailAddress,
+                role: roleMap.get(clerkUser.id),
             }));
         }),
 
