@@ -28,11 +28,25 @@ export function AddItemForm({
 }: SettingsContentProps) {
     const trpc = useTRPC();
     const queryClient = useQueryClient();
-    const { data: members } = useQuery(
-        trpc.getMembers.queryOptions({
-            groupId: groupId,
-        }),
-    );
+
+    // const { data: members } = useQuery(
+    //     trpc.getMembers.queryOptions({
+    //         groupId: groupId,
+    //     }),
+    // );
+
+    const addItemFormSchema = addItemSchema.omit({ groupId: true });
+
+    const form = useForm<z.infer<typeof addItemFormSchema>>({
+        resolver: zodResolver(addItemFormSchema),
+        defaultValues: {
+            name: "",
+            amount: 0,
+            creditUserIds: [],
+            debitUserIds: [],
+        },
+    });
+
     const { mutateAsync: addItem, isPending } = useMutation(
         trpc.addItem.mutationOptions({
             onSuccess: async () => {
@@ -51,16 +65,7 @@ export function AddItemForm({
             },
         }),
     );
-    const addItemFormSchema = addItemSchema.omit({ groupId: true });
-    const form = useForm<z.infer<typeof addItemFormSchema>>({
-        resolver: zodResolver(addItemFormSchema),
-        defaultValues: {
-            name: "",
-            amount: BigInt(0),
-            creditUserIds: [],
-            debitUserIds: [],
-        },
-    });
+
     async function onSubmit(data: z.infer<typeof addItemFormSchema>) {
         await addItem({
             groupId: groupId,
@@ -99,13 +104,11 @@ export function AddItemForm({
                             <FormControl>
                                 <Input
                                     {...field}
+                                    type="number"
+                                    step="0.01"
                                     onChange={(e) =>
-                                        form.setValue(
-                                            "amount",
-                                            BigInt(e.target.value),
-                                        )
+                                        field.onChange(+e.target.value)
                                     }
-                                    value={field.value.toString()}
                                 />
                             </FormControl>
                             <FormMessage />

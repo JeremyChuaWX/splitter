@@ -54,7 +54,7 @@ export const getItemsSchema = z.object({
 export const addItemSchema = z.object({
     groupId: z.string(),
     name: z.string(),
-    amount: z.bigint(),
+    amount: z.number(),
     debitUserIds: z.array(z.string()).nonempty(),
     creditUserIds: z.array(z.string()).nonempty(),
 });
@@ -67,5 +67,5 @@ export const removeItemsSchema = z.object({
 export const updateItemSchema = z.object({
     groupId: z.string(),
     name: z.union([z.string().nonempty(), z.undefined()]),
-    amount: z.union([z.bigint(), z.undefined()]),
+    amount: z.union([z.number(), z.undefined()]),
 });

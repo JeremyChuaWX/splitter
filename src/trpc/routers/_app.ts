@@ -5,12 +5,13 @@ import {
     groupTable,
     itemTable,
     type Role,
+    ROLE_MAP,
 } from "@/db/schema";
 import { TRPCError } from "@trpc/server";
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
-import { createTRPCRouter, protectedProcedure } from "..";
-import { roleAllowed } from "./utils";
+import { createTRPCRouter, protectedProcedure, type TRPCContext } from "..";
 import * as v from "./validators";
+import { numberToBigint } from "@/lib/utils";
 
 export const appRouter = createTRPCRouter({
     createGroup: protectedProcedure
@@ -444,13 +445,14 @@ export const appRouter = createTRPCRouter({
                     code: "FORBIDDEN",
                 });
             }
+            const parsedAmount = numberToBigint(input.amount);
             await ctx.db.transaction(async (tx) => {
                 const [item] = await tx
                     .insert(itemTable)
                     .values({
                         groupId: input.groupId,
                         name: input.name,
-                        amount: input.amount,
+                        amount: parsedAmount,
                         data: {},
                     })
                     .returning({ id: itemTable.id });
@@ -542,3 +544,38 @@ export const appRouter = createTRPCRouter({
 });
 
 export type AppRouter = typeof appRouter;
+
+async function isGroupMember(
+    ctx: TRPCContext,
+    groupId: string,
+): Promise<[false, null] | [true, Role]> {
+    const userId = ctx.auth.userId;
+    if (!userId) {
+        return [false, null];
+    }
+    const check = await ctx.db
+        .select({
+            role: sql<Role>`${groupMembershipTable.data}->>'role'`,
+        })
+        .from(groupTable)
+        .innerJoin(
+            groupMembershipTable,
+            eq(groupMembershipTable.groupId, groupTable.id),
+        )
+        .where(
+            and(
+                eq(groupMembershipTable.userId, ctx.auth.userId),
+                eq(groupTable.id, groupId),
+                isNull(groupTable.deletedAt),
+            ),
+        );
+    const [{ role }] = check;
+    if (check.length !== 1) {
+        return [false, null];
+    }
+    return [true, role];
+}
+
+function roleAllowed(role: Role, allowed: Role) {
+    return ROLE_MAP[role] >= ROLE_MAP[allowed];
+}

@@ -148,7 +148,7 @@ export function AddMembersForm({
                             </FormControl>
                             <SelectContent>
                                 <SelectItem value="admin">Admin</SelectItem>
-                                <SelectItem value="user">Member</SelectItem>
+                                <SelectItem value="user">User</SelectItem>
                             </SelectContent>
                         </Select>
                     </FormItem>
@@ -217,8 +217,8 @@ export function AddMembersForm({
                                                                         <SelectItem value="admin">
                                                                             Admin
                                                                         </SelectItem>
-                                                                        <SelectItem value="member">
-                                                                            Member
+                                                                        <SelectItem value="user">
+                                                                            User
                                                                         </SelectItem>
                                                                     </SelectContent>
                                                                 </Select>
