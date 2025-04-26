@@ -25,7 +25,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Role } from "@/db/schema";
+import { type Role } from "@/db/schema";
 import { cn } from "@/lib/utils";
 import { useTRPC } from "@/trpc/client";
 import { addMembersSchema } from "@/trpc/routers/validators";
