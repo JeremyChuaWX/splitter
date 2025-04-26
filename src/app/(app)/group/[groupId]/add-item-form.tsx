@@ -97,7 +97,16 @@ export function AddItemForm({
                         <FormItem>
                             <FormLabel>Amount</FormLabel>
                             <FormControl>
-                                <Input {...field} />
+                                <Input
+                                    {...field}
+                                    onChange={(e) =>
+                                        form.setValue(
+                                            "amount",
+                                            BigInt(e.target.value),
+                                        )
+                                    }
+                                    value={field.value.toString()}
+                                />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
