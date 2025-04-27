@@ -1,7 +1,6 @@
 import { HydrateClient, prefetch, trpc } from "@/trpc/server";
 import { Suspense } from "react";
 import { ItemRows } from "./item-rows";
-import { SettingsDropdown } from "./settings-dropdown";
 import {
     Table,
     TableBody,
@@ -12,6 +11,7 @@ import {
     TableFooter,
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Header } from "./header";
 
 type Props = {
     params: Promise<{ groupId: string }>;
@@ -19,26 +19,20 @@ type Props = {
 
 export default async function Page({ params }: Props) {
     const { groupId } = await params;
+    prefetch(trpc.getGroup.queryOptions({ groupId: groupId }));
     prefetch(trpc.getItems.queryOptions({ groupId: groupId }));
     prefetch(trpc.getMembers.queryOptions({ groupId: groupId }));
 
     return (
         <HydrateClient>
             <div className="flex flex-col gap-6 pt-24 w-2/3">
-                <Header groupId={groupId} />
+                <Suspense fallback={<Skeleton className="w-full h-12" />}>
+                    <Header groupId={groupId} />
+                </Suspense>
                 <ItemSection groupId={groupId} />
                 <BalanceSection />
             </div>
         </HydrateClient>
-    );
-}
-
-function Header({ groupId }: { groupId: string }) {
-    return (
-        <div className="flex gap-2 items-center w-full">
-            <h1 className="flex-1 text-2xl font-bold">Korea Trip</h1>
-            <SettingsDropdown groupId={groupId} />
-        </div>
     );
 }
 
