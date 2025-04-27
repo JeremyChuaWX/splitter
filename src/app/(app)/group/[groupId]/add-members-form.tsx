@@ -4,20 +4,12 @@ import { Button } from "@/components/ui/button";
 import {
     Form,
     FormControl,
-    FormDescription,
     FormField,
     FormItem,
     FormLabel,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { useTRPC } from "@/trpc/client";
 import { addMembersSchema } from "@/trpc/routers/validators";
@@ -93,9 +85,9 @@ export function AddMembersForm({
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-6">
-                <div className="grid grid-cols-1 gap-2 items-end sm:grid-cols-[1fr_auto_auto]">
-                    <FormItem>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
+                <div className="flex gap-2 items-end">
+                    <FormItem className="flex-1">
                         <FormLabel>Username</FormLabel>
                         <FormControl>
                             <Input
@@ -129,49 +121,37 @@ export function AddMembersForm({
                     name="members"
                     render={() => (
                         <FormItem>
-                            {/* Optional: Label/Description for the table */}
                             {fields.length > 0 && (
-                                <FormLabel>Members to Add</FormLabel>
-                            )}
-                            {fields.length > 0 ? (
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Username</TableHead>
-                                            <TableHead className="w-[50px]"></TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {fields.map((field, index) => (
-                                            <TableRow key={field.id}>
-                                                <TableCell className="font-medium break-all">
-                                                    {form.getValues(
-                                                        `members.${index}.username`,
-                                                    )}
-                                                </TableCell>
+                                <>
+                                    <FormLabel>Members to Add</FormLabel>
+                                    <Table>
+                                        <TableBody>
+                                            {fields.map((field, index) => (
+                                                <TableRow key={field.id}>
+                                                    <TableCell className="font-medium break-all">
+                                                        {form.getValues(
+                                                            `members.${index}.username`,
+                                                        )}
+                                                    </TableCell>
 
-                                                <TableCell className="text-right">
-                                                    <Button
-                                                        type="button"
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        onClick={() =>
-                                                            remove(index)
-                                                        }
-                                                        aria-label="Remove member"
-                                                    >
-                                                        <LucideTrash2 className="w-4 h-4 text-destructive" />
-                                                    </Button>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            ) : (
-                                <FormDescription>
-                                    Use the fields above to add members to the
-                                    list.
-                                </FormDescription>
+                                                    <TableCell className="text-right">
+                                                        <Button
+                                                            type="button"
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            onClick={() =>
+                                                                remove(index)
+                                                            }
+                                                            aria-label="Remove member"
+                                                        >
+                                                            <LucideTrash2 className="w-4 h-4 text-destructive" />
+                                                        </Button>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </>
                             )}
                         </FormItem>
                     )}
