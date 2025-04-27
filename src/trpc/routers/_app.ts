@@ -91,29 +91,13 @@ export const appRouter = createTRPCRouter({
             if (!input.name) {
                 return;
             }
-            const check = await ctx.db
-                .select({
-                    role: sql<Role>`${groupMembershipTable.data}->>'role'`,
-                })
-                .from(groupTable)
-                .innerJoin(
-                    groupMembershipTable,
-                    eq(groupMembershipTable.groupId, groupTable.id),
-                )
-                .where(
-                    and(
-                        eq(groupMembershipTable.userId, ctx.auth.userId),
-                        eq(groupTable.id, input.groupId),
-                        isNull(groupTable.deletedAt),
-                    ),
-                );
-            if (check.length !== 1) {
+            const [check, role] = await isGroupMember(ctx, input.groupId);
+            if (check === false /* narrow types for `role` */) {
                 throw new TRPCError({
                     message: "group not found",
                     code: "NOT_FOUND",
                 });
             }
-            const [{ role }] = check;
             if (!roleAllowed(role, "admin")) {
                 throw new TRPCError({
                     message: "user does not have required role",
@@ -136,29 +120,13 @@ export const appRouter = createTRPCRouter({
     deleteGroup: protectedProcedure
         .input(v.deleteGroupSchema)
         .mutation(async ({ ctx, input }) => {
-            const check = await ctx.db
-                .select({
-                    role: sql<Role>`${groupMembershipTable.data}->>'role'`,
-                })
-                .from(groupTable)
-                .innerJoin(
-                    groupMembershipTable,
-                    eq(groupMembershipTable.groupId, groupTable.id),
-                )
-                .where(
-                    and(
-                        eq(groupMembershipTable.userId, ctx.auth.userId),
-                        eq(groupTable.id, input.groupId),
-                        isNull(groupTable.deletedAt),
-                    ),
-                );
-            if (check.length !== 1) {
+            const [check, role] = await isGroupMember(ctx, input.groupId);
+            if (check === false /* narrow types for `role` */) {
                 throw new TRPCError({
                     message: "group not found",
                     code: "NOT_FOUND",
                 });
             }
-            const [{ role }] = check;
             if (!roleAllowed(role, "admin")) {
                 throw new TRPCError({
                     message: "user does not have required role",
@@ -176,23 +144,8 @@ export const appRouter = createTRPCRouter({
     getMembers: protectedProcedure
         .input(v.getMembersSchema)
         .query(async ({ ctx, input }) => {
-            const check = await ctx.db
-                .select({
-                    role: sql<Role>`${groupMembershipTable.data}->>'role'`,
-                })
-                .from(groupTable)
-                .innerJoin(
-                    groupMembershipTable,
-                    eq(groupMembershipTable.groupId, groupTable.id),
-                )
-                .where(
-                    and(
-                        eq(groupMembershipTable.userId, ctx.auth.userId),
-                        eq(groupTable.id, input.groupId),
-                        isNull(groupTable.deletedAt),
-                    ),
-                );
-            if (check.length !== 1) {
+            const [check] = await isGroupMember(ctx, input.groupId);
+            if (check === false /* narrow types for `role` */) {
                 throw new TRPCError({
                     message: "group not found",
                     code: "NOT_FOUND",
@@ -208,7 +161,7 @@ export const appRouter = createTRPCRouter({
             const clerkUsers = (
                 await ctx.clerk.users.getUserList({
                     userId: members.map((member) => member.id),
-                    orderBy: "email_address",
+                    orderBy: "username",
                 })
             ).data;
             const roleMap = new Map<string, Role>();
@@ -217,6 +170,7 @@ export const appRouter = createTRPCRouter({
             }
             return clerkUsers.map((clerkUser) => ({
                 id: clerkUser.id,
+                username: clerkUser.username,
                 email: clerkUser.primaryEmailAddress?.emailAddress,
                 role: roleMap.get(clerkUser.id),
             }));
@@ -228,33 +182,11 @@ export const appRouter = createTRPCRouter({
             if (input.members.length === 0) {
                 return;
             }
-            const check = await ctx.db
-                .select({
-                    role: sql<Role>`${groupMembershipTable.data}->>'role'`,
-                })
-                .from(groupTable)
-                .innerJoin(
-                    groupMembershipTable,
-                    eq(groupMembershipTable.groupId, groupTable.id),
-                )
-                .where(
-                    and(
-                        eq(groupMembershipTable.userId, ctx.auth.userId),
-                        eq(groupTable.id, input.groupId),
-                        isNull(groupTable.deletedAt),
-                    ),
-                );
-            if (check.length !== 1) {
+            const [check] = await isGroupMember(ctx, input.groupId);
+            if (check === false) {
                 throw new TRPCError({
                     message: "group not found",
                     code: "NOT_FOUND",
-                });
-            }
-            const [{ role }] = check;
-            if (!roleAllowed(role, "admin")) {
-                throw new TRPCError({
-                    message: "user does not have required role",
-                    code: "FORBIDDEN",
                 });
             }
             const emailMap = new Map<string, Role>();
@@ -284,33 +216,11 @@ export const appRouter = createTRPCRouter({
             if (input.memberIds.length === 0) {
                 return;
             }
-            const check = await ctx.db
-                .select({
-                    role: sql<Role>`${groupMembershipTable.data}->>'role'`,
-                })
-                .from(groupTable)
-                .innerJoin(
-                    groupMembershipTable,
-                    eq(groupMembershipTable.groupId, groupTable.id),
-                )
-                .where(
-                    and(
-                        eq(groupMembershipTable.userId, ctx.auth.userId),
-                        eq(groupTable.id, input.groupId),
-                        isNull(groupTable.deletedAt),
-                    ),
-                );
-            if (check.length !== 1) {
+            const [check] = await isGroupMember(ctx, input.groupId);
+            if (check === false) {
                 throw new TRPCError({
                     message: "group not found",
                     code: "NOT_FOUND",
-                });
-            }
-            const [{ role }] = check;
-            if (!roleAllowed(role, "admin")) {
-                throw new TRPCError({
-                    message: "user does not have required role",
-                    code: "FORBIDDEN",
                 });
             }
             await ctx.db
@@ -329,29 +239,13 @@ export const appRouter = createTRPCRouter({
             if (input.members.length === 0) {
                 return;
             }
-            const check = await ctx.db
-                .select({
-                    role: sql<Role>`${groupMembershipTable.data}->>'role'`,
-                })
-                .from(groupTable)
-                .innerJoin(
-                    groupMembershipTable,
-                    eq(groupMembershipTable.groupId, groupTable.id),
-                )
-                .where(
-                    and(
-                        eq(groupMembershipTable.userId, ctx.auth.userId),
-                        eq(groupTable.id, input.groupId),
-                        isNull(groupTable.deletedAt),
-                    ),
-                );
-            if (check.length !== 1) {
+            const [check, role] = await isGroupMember(ctx, input.groupId);
+            if (check === false) {
                 throw new TRPCError({
                     message: "group not found",
                     code: "NOT_FOUND",
                 });
             }
-            const [{ role }] = check;
             if (!roleAllowed(role, "admin")) {
                 throw new TRPCError({
                     message: "user does not have required role",
@@ -380,28 +274,19 @@ export const appRouter = createTRPCRouter({
     getItems: protectedProcedure
         .input(v.getItemsSchema)
         .query(async ({ ctx, input }) => {
-            const check = await ctx.db
-                .select({
-                    role: sql<Role>`${groupMembershipTable.data}->>'role'`,
-                })
-                .from(groupTable)
-                .innerJoin(
-                    groupMembershipTable,
-                    eq(groupMembershipTable.groupId, groupTable.id),
-                )
-                .where(
-                    and(
-                        eq(groupMembershipTable.userId, ctx.auth.userId),
-                        eq(groupTable.id, input.groupId),
-                        isNull(groupTable.deletedAt),
-                    ),
-                );
-            if (check.length !== 1) {
+            const [check, role] = await isGroupMember(ctx, input.groupId);
+            if (check === false) {
                 throw new TRPCError({
                     message: "group not found",
                     code: "NOT_FOUND",
                 });
             }
+            // if (!roleAllowed(role, "admin")) {
+            //     throw new TRPCError({
+            //         message: "user does not have required role",
+            //         code: "FORBIDDEN",
+            //     });
+            // }
             return await ctx.db
                 .select({
                     id: itemTable.id,
@@ -416,29 +301,13 @@ export const appRouter = createTRPCRouter({
     addItem: protectedProcedure
         .input(v.addItemSchema)
         .mutation(async ({ ctx, input }) => {
-            const check = await ctx.db
-                .select({
-                    role: sql<Role>`${groupMembershipTable.data}->>'role'`,
-                })
-                .from(groupTable)
-                .innerJoin(
-                    groupMembershipTable,
-                    eq(groupMembershipTable.groupId, groupTable.id),
-                )
-                .where(
-                    and(
-                        eq(groupMembershipTable.userId, ctx.auth.userId),
-                        eq(groupTable.id, input.groupId),
-                        isNull(groupTable.deletedAt),
-                    ),
-                );
-            if (check.length !== 1) {
+            const [check, role] = await isGroupMember(ctx, input.groupId);
+            if (check === false) {
                 throw new TRPCError({
                     message: "group not found",
                     code: "NOT_FOUND",
                 });
             }
-            const [{ role }] = check;
             if (!roleAllowed(role, "admin")) {
                 throw new TRPCError({
                     message: "user does not have required role",
@@ -493,29 +362,13 @@ export const appRouter = createTRPCRouter({
             if (input.itemIds.length === 0) {
                 return;
             }
-            const check = await ctx.db
-                .select({
-                    role: sql<Role>`${groupMembershipTable.data}->>'role'`,
-                })
-                .from(groupTable)
-                .innerJoin(
-                    groupMembershipTable,
-                    eq(groupMembershipTable.groupId, groupTable.id),
-                )
-                .where(
-                    and(
-                        eq(groupMembershipTable.userId, ctx.auth.userId),
-                        eq(groupTable.id, input.groupId),
-                        isNull(groupTable.deletedAt),
-                    ),
-                );
-            if (check.length !== 1) {
+            const [check, role] = await isGroupMember(ctx, input.groupId);
+            if (check === false) {
                 throw new TRPCError({
                     message: "group not found",
                     code: "NOT_FOUND",
                 });
             }
-            const [{ role }] = check;
             if (!roleAllowed(role, "admin")) {
                 throw new TRPCError({
                     message: "user does not have required role",
