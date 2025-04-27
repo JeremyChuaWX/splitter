@@ -80,6 +80,7 @@ export function SettingsDropdown({ groupId }: { groupId: string }) {
                         <DropdownMenuItem
                             key={key}
                             onClick={() => handleOpenItem(key)}
+                            className="cursor-pointer"
                         >
                             {SETTINGS[key].title} {/* Use title from config */}
                         </DropdownMenuItem>
