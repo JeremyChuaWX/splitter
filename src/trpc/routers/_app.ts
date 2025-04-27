@@ -86,7 +86,7 @@ export const appRouter = createTRPCRouter({
             if (!input.name) {
                 return;
             }
-            if (await isGroupMember(ctx, input.groupId)) {
+            if (!(await isGroupMember(ctx, input.groupId))) {
                 throw new TRPCError({
                     message: "group not found",
                     code: "NOT_FOUND",
@@ -108,7 +108,7 @@ export const appRouter = createTRPCRouter({
     deleteGroup: protectedProcedure
         .input(v.deleteGroupSchema)
         .mutation(async ({ ctx, input }) => {
-            if (await isGroupMember(ctx, input.groupId)) {
+            if (!(await isGroupMember(ctx, input.groupId))) {
                 throw new TRPCError({
                     message: "group not found",
                     code: "NOT_FOUND",
@@ -125,7 +125,7 @@ export const appRouter = createTRPCRouter({
     getMembers: protectedProcedure
         .input(v.getMembersSchema)
         .query(async ({ ctx, input }) => {
-            if (await isGroupMember(ctx, input.groupId)) {
+            if (!(await isGroupMember(ctx, input.groupId))) {
                 throw new TRPCError({
                     message: "group not found",
                     code: "NOT_FOUND",
@@ -155,7 +155,7 @@ export const appRouter = createTRPCRouter({
             if (input.members.length === 0) {
                 return;
             }
-            if (await isGroupMember(ctx, input.groupId)) {
+            if (!(await isGroupMember(ctx, input.groupId))) {
                 throw new TRPCError({
                     message: "group not found",
                     code: "NOT_FOUND",
@@ -182,7 +182,7 @@ export const appRouter = createTRPCRouter({
             if (input.memberIds.length === 0) {
                 return;
             }
-            if (await isGroupMember(ctx, input.groupId)) {
+            if (!(await isGroupMember(ctx, input.groupId))) {
                 throw new TRPCError({
                     message: "group not found",
                     code: "NOT_FOUND",
@@ -201,7 +201,7 @@ export const appRouter = createTRPCRouter({
     getItems: protectedProcedure
         .input(v.getItemsSchema)
         .query(async ({ ctx, input }) => {
-            if (await isGroupMember(ctx, input.groupId)) {
+            if (!(await isGroupMember(ctx, input.groupId))) {
                 throw new TRPCError({
                     message: "group not found",
                     code: "NOT_FOUND",
@@ -221,7 +221,7 @@ export const appRouter = createTRPCRouter({
     addItem: protectedProcedure
         .input(v.addItemSchema)
         .mutation(async ({ ctx, input }) => {
-            if (await isGroupMember(ctx, input.groupId)) {
+            if (!(await isGroupMember(ctx, input.groupId))) {
                 throw new TRPCError({
                     message: "group not found",
                     code: "NOT_FOUND",
@@ -275,7 +275,7 @@ export const appRouter = createTRPCRouter({
             if (input.itemIds.length === 0) {
                 return;
             }
-            if (await isGroupMember(ctx, input.groupId)) {
+            if (!(await isGroupMember(ctx, input.groupId))) {
                 throw new TRPCError({
                     message: "group not found",
                     code: "NOT_FOUND",
@@ -300,7 +300,7 @@ export const appRouter = createTRPCRouter({
     updateItems: protectedProcedure
         .input(v.updateItemSchema)
         .mutation(async ({ ctx, input }) => {
-            if (await isGroupMember(ctx, input.groupId)) {
+            if (!(await isGroupMember(ctx, input.groupId))) {
                 throw new TRPCError({
                     message: "group not found",
                     code: "NOT_FOUND",
