@@ -11,7 +11,7 @@ export default function Page() {
 
     return (
         <HydrateClient>
-            <div className="flex flex-col gap-6 pt-24 w-2/3">
+            <div className="flex flex-col gap-6 pt-24 w-full max-w-[650px]">
                 <Header />
                 <GroupSection />
             </div>
