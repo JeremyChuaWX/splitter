@@ -4,8 +4,6 @@ import {
     groupMembershipTable,
     groupTable,
     itemTable,
-    type Role,
-    ROLE_MAP,
 } from "@/db/schema";
 import { TRPCError } from "@trpc/server";
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
@@ -28,9 +26,7 @@ export const appRouter = createTRPCRouter({
                 await tx.insert(groupMembershipTable).values({
                     groupId: group.id,
                     userId: ctx.auth.userId,
-                    data: {
-                        role: "owner",
-                    },
+                    data: {},
                 });
                 return group;
             });
@@ -41,7 +37,6 @@ export const appRouter = createTRPCRouter({
             .select({
                 id: groupTable.id,
                 name: groupTable.name,
-                role: sql<Role>`${groupMembershipTable.data}->>'role'`,
             })
             .from(groupTable)
             .innerJoin(
@@ -91,17 +86,10 @@ export const appRouter = createTRPCRouter({
             if (!input.name) {
                 return;
             }
-            const [check, role] = await isGroupMember(ctx, input.groupId);
-            if (check === false /* narrow types for `role` */) {
+            if (await isGroupMember(ctx, input.groupId)) {
                 throw new TRPCError({
                     message: "group not found",
                     code: "NOT_FOUND",
-                });
-            }
-            if (!roleAllowed(role, "admin")) {
-                throw new TRPCError({
-                    message: "user does not have required role",
-                    code: "FORBIDDEN",
                 });
             }
             await ctx.db
@@ -120,17 +108,10 @@ export const appRouter = createTRPCRouter({
     deleteGroup: protectedProcedure
         .input(v.deleteGroupSchema)
         .mutation(async ({ ctx, input }) => {
-            const [check, role] = await isGroupMember(ctx, input.groupId);
-            if (check === false /* narrow types for `role` */) {
+            if (await isGroupMember(ctx, input.groupId)) {
                 throw new TRPCError({
                     message: "group not found",
                     code: "NOT_FOUND",
-                });
-            }
-            if (!roleAllowed(role, "admin")) {
-                throw new TRPCError({
-                    message: "user does not have required role",
-                    code: "FORBIDDEN",
                 });
             }
             await ctx.db
@@ -144,8 +125,7 @@ export const appRouter = createTRPCRouter({
     getMembers: protectedProcedure
         .input(v.getMembersSchema)
         .query(async ({ ctx, input }) => {
-            const [check] = await isGroupMember(ctx, input.groupId);
-            if (check === false /* narrow types for `role` */) {
+            if (await isGroupMember(ctx, input.groupId)) {
                 throw new TRPCError({
                     message: "group not found",
                     code: "NOT_FOUND",
@@ -154,7 +134,6 @@ export const appRouter = createTRPCRouter({
             const members = await ctx.db
                 .select({
                     id: groupMembershipTable.userId,
-                    role: sql<Role>`${groupMembershipTable.data}->>'role'`,
                 })
                 .from(groupMembershipTable)
                 .where(eq(groupMembershipTable.groupId, input.groupId));
@@ -164,15 +143,9 @@ export const appRouter = createTRPCRouter({
                     orderBy: "username",
                 })
             ).data;
-            const roleMap = new Map<string, Role>();
-            for (const member of members) {
-                roleMap.set(member.id, member.role);
-            }
             return clerkUsers.map((clerkUser) => ({
                 id: clerkUser.id,
                 username: clerkUser.username,
-                email: clerkUser.primaryEmailAddress?.emailAddress,
-                role: roleMap.get(clerkUser.id),
             }));
         }),
 
@@ -182,27 +155,20 @@ export const appRouter = createTRPCRouter({
             if (input.members.length === 0) {
                 return;
             }
-            const [check] = await isGroupMember(ctx, input.groupId);
-            if (check === false) {
+            if (await isGroupMember(ctx, input.groupId)) {
                 throw new TRPCError({
                     message: "group not found",
                     code: "NOT_FOUND",
                 });
             }
-            const emailMap = new Map<string, Role>();
-            input.members.forEach((member) => {
-                emailMap.set(member.email, member.role);
-            });
             const members = (
                 await ctx.clerk.users.getUserList({
-                    emailAddress: Array.from(emailMap.keys()),
+                    username: input.members.map((member) => member.username),
                 })
             ).data.map((user) => ({
                 groupId: input.groupId,
                 userId: user.id,
-                data: {
-                    role: emailMap.get(user.primaryEmailAddress!.emailAddress)!,
-                },
+                data: {},
             })) satisfies (typeof groupMembershipTable.$inferInsert)[];
             await ctx.db
                 .insert(groupMembershipTable)
@@ -216,8 +182,7 @@ export const appRouter = createTRPCRouter({
             if (input.memberIds.length === 0) {
                 return;
             }
-            const [check] = await isGroupMember(ctx, input.groupId);
-            if (check === false) {
+            if (await isGroupMember(ctx, input.groupId)) {
                 throw new TRPCError({
                     message: "group not found",
                     code: "NOT_FOUND",
@@ -233,60 +198,15 @@ export const appRouter = createTRPCRouter({
                 );
         }),
 
-    updateMembersRoles: protectedProcedure
-        .input(v.updateMembersRolesSchema)
-        .mutation(async ({ ctx, input }) => {
-            if (input.members.length === 0) {
-                return;
-            }
-            const [check, role] = await isGroupMember(ctx, input.groupId);
-            if (check === false) {
-                throw new TRPCError({
-                    message: "group not found",
-                    code: "NOT_FOUND",
-                });
-            }
-            if (!roleAllowed(role, "admin")) {
-                throw new TRPCError({
-                    message: "user does not have required role",
-                    code: "FORBIDDEN",
-                });
-            }
-            await ctx.db.transaction(async (tx) => {
-                for (const member of input.members) {
-                    await tx
-                        .update(groupMembershipTable)
-                        .set({
-                            data: {
-                                role: member.role,
-                            },
-                        })
-                        .where(
-                            and(
-                                eq(groupMembershipTable.groupId, input.groupId),
-                                eq(groupMembershipTable.userId, member.userId),
-                            ),
-                        );
-                }
-            });
-        }),
-
     getItems: protectedProcedure
         .input(v.getItemsSchema)
         .query(async ({ ctx, input }) => {
-            const [check, role] = await isGroupMember(ctx, input.groupId);
-            if (check === false) {
+            if (await isGroupMember(ctx, input.groupId)) {
                 throw new TRPCError({
                     message: "group not found",
                     code: "NOT_FOUND",
                 });
             }
-            // if (!roleAllowed(role, "admin")) {
-            //     throw new TRPCError({
-            //         message: "user does not have required role",
-            //         code: "FORBIDDEN",
-            //     });
-            // }
             return await ctx.db
                 .select({
                     id: itemTable.id,
@@ -301,17 +221,10 @@ export const appRouter = createTRPCRouter({
     addItem: protectedProcedure
         .input(v.addItemSchema)
         .mutation(async ({ ctx, input }) => {
-            const [check, role] = await isGroupMember(ctx, input.groupId);
-            if (check === false) {
+            if (await isGroupMember(ctx, input.groupId)) {
                 throw new TRPCError({
                     message: "group not found",
                     code: "NOT_FOUND",
-                });
-            }
-            if (!roleAllowed(role, "admin")) {
-                throw new TRPCError({
-                    message: "user does not have required role",
-                    code: "FORBIDDEN",
                 });
             }
             const parsedAmount = numberToBigint(input.amount);
@@ -362,17 +275,10 @@ export const appRouter = createTRPCRouter({
             if (input.itemIds.length === 0) {
                 return;
             }
-            const [check, role] = await isGroupMember(ctx, input.groupId);
-            if (check === false) {
+            if (await isGroupMember(ctx, input.groupId)) {
                 throw new TRPCError({
                     message: "group not found",
                     code: "NOT_FOUND",
-                });
-            }
-            if (!roleAllowed(role, "admin")) {
-                throw new TRPCError({
-                    message: "user does not have required role",
-                    code: "FORBIDDEN",
                 });
             }
             await ctx.db.transaction(async (tx) => {
@@ -393,23 +299,25 @@ export const appRouter = createTRPCRouter({
 
     updateItems: protectedProcedure
         .input(v.updateItemSchema)
-        .mutation(async ({ ctx, input }) => {}),
+        .mutation(async ({ ctx, input }) => {
+            if (await isGroupMember(ctx, input.groupId)) {
+                throw new TRPCError({
+                    message: "group not found",
+                    code: "NOT_FOUND",
+                });
+            }
+        }),
 });
 
 export type AppRouter = typeof appRouter;
 
-async function isGroupMember(
-    ctx: TRPCContext,
-    groupId: string,
-): Promise<[false, null] | [true, Role]> {
+async function isGroupMember(ctx: TRPCContext, groupId: string) {
     const userId = ctx.auth.userId;
     if (!userId) {
-        return [false, null];
+        return false;
     }
     const check = await ctx.db
-        .select({
-            role: sql<Role>`${groupMembershipTable.data}->>'role'`,
-        })
+        .select({})
         .from(groupTable)
         .innerJoin(
             groupMembershipTable,
@@ -422,13 +330,5 @@ async function isGroupMember(
                 isNull(groupTable.deletedAt),
             ),
         );
-    const [{ role }] = check;
-    if (check.length !== 1) {
-        return [false, null];
-    }
-    return [true, role];
-}
-
-function roleAllowed(role: Role, allowed: Role) {
-    return ROLE_MAP[role] >= ROLE_MAP[allowed];
+    return check.length === 1;
 }

@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { ROLES } from "@/db/schema";
 
 export const createGroupSchema = z.object({
     name: z.string(),
@@ -26,8 +25,7 @@ export const addMembersSchema = z.object({
     groupId: z.string(),
     members: z.array(
         z.object({
-            email: z.string().email(),
-            role: z.enum(ROLES),
+            username: z.string(),
         }),
     ),
 });
@@ -35,16 +33,6 @@ export const addMembersSchema = z.object({
 export const removeMembersSchema = z.object({
     groupId: z.string(),
     memberIds: z.array(z.string()),
-});
-
-export const updateMembersRolesSchema = z.object({
-    groupId: z.string(),
-    members: z.array(
-        z.object({
-            userId: z.string(),
-            role: z.enum(ROLES),
-        }),
-    ),
 });
 
 export const getItemsSchema = z.object({

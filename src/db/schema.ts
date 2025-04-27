@@ -8,16 +8,6 @@ import {
     uuid,
 } from "drizzle-orm/pg-core";
 
-export const ROLES = ["user", "admin", "owner"] as const;
-
-export type Role = (typeof ROLES)[number];
-
-export const ROLE_MAP: Readonly<Record<Role, number>> = {
-    user: 1,
-    admin: 2,
-    owner: 3,
-} as const;
-
 const timestamps = {
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdateFn(
@@ -57,7 +47,8 @@ export const groupMembershipTable = pgTable(
         groupId: uuid("group_id")
             .notNull()
             .references(() => groupTable.id, { onDelete: "restrict" }),
-        data: json("data").$type<{ role: Role }>().notNull(),
+        // data: json("data").$type<{}>().notNull(),
+        data: json("data").notNull(),
     },
     (t) => [primaryKey({ columns: [t.userId, t.groupId] })],
 );
