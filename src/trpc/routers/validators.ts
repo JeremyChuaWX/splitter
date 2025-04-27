@@ -23,12 +23,12 @@ export const getMembersSchema = z.object({
 
 export const addMembersSchema = z.object({
     groupId: z.string().nonempty(),
-    members: z.array(z.object({ username: z.string().nonempty() })).nonempty(),
+    members: z.array(z.object({ username: z.string().nonempty() })).min(1),
 });
 
 export const removeMembersSchema = z.object({
     groupId: z.string().nonempty(),
-    members: z.array(z.object({ id: z.string() })).nonempty(),
+    members: z.array(z.object({ id: z.string() })).min(1),
 });
 
 export const getItemsSchema = z.object({
@@ -39,13 +39,13 @@ export const addItemSchema = z.object({
     groupId: z.string().nonempty(),
     name: z.string().nonempty(),
     amount: z.number().nonnegative(),
-    payeeIds: z.array(z.string().nonempty()).nonempty(),
-    payerIds: z.array(z.string().nonempty()).nonempty(),
+    payeeIds: z.array(z.string().nonempty()).min(1),
+    payerIds: z.array(z.string().nonempty()).min(1),
 });
 
 export const removeItemsSchema = z.object({
     groupId: z.string().nonempty(),
-    items: z.array(z.object({ id: z.string().nonempty() })).nonempty(),
+    items: z.array(z.object({ id: z.string().nonempty() })).min(1),
 });
 
 export const updateItemSchema = z.object({

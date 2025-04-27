@@ -80,14 +80,13 @@ export function AddItemForm({
     );
 
     async function onSubmit(data: z.infer<typeof addItemFormSchema>) {
-        console.log(data);
-        // await addItem({
-        //     groupId: groupId,
-        //     name: data.name,
-        //     amount: data.amount,
-        //     payees: data.payees,
-        //     payers: data.payers,
-        // });
+        await addItem({
+            groupId: groupId,
+            name: data.name,
+            amount: data.amount,
+            payeeIds: data.payeeIds,
+            payerIds: data.payerIds,
+        });
     }
 
     return (
