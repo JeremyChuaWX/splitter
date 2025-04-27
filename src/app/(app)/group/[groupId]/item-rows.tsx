@@ -1,6 +1,7 @@
 "use client";
 
 import { TableCell, TableRow } from "@/components/ui/table";
+import { bigintToCurrency } from "@/lib/utils";
 import { useTRPC } from "@/trpc/client";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
@@ -31,7 +32,9 @@ function ItemRow({
             <TableCell className="font-medium">{item.name}</TableCell>
             <TableCell>Alice, Bob, Charlie</TableCell>
             <TableCell>Alice, Bob, Charlie</TableCell>
-            <TableCell className="text-right">${item.amount}</TableCell>
+            <TableCell className="text-right">
+                ${bigintToCurrency(item.amount)}
+            </TableCell>
         </TableRow>
     );
 }
