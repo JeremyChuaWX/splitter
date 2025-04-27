@@ -121,6 +121,7 @@ export function AddItemForm({
                                         {...field}
                                         type="number"
                                         step="0.01"
+                                        min="0"
                                         onChange={(e) =>
                                             field.onChange(+e.target.value)
                                         }
