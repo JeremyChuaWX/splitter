@@ -27,16 +27,16 @@ export default async function Page({ params }: Props) {
         <HydrateClient>
             <div className="flex flex-col gap-6 pt-24 w-2/3">
                 <Suspense fallback={<Skeleton className="w-full h-12" />}>
-                    <Header groupId={groupId} />
+                    <Header />
                 </Suspense>
-                <ItemSection groupId={groupId} />
+                <ItemSection />
                 <BalanceSection />
             </div>
         </HydrateClient>
     );
 }
 
-function ItemSection({ groupId }: { groupId: string }) {
+function ItemSection() {
     return (
         <div className="w-full">
             <div className="flex justify-between w-full">
@@ -61,7 +61,7 @@ function ItemSection({ groupId }: { groupId: string }) {
                             </>
                         }
                     >
-                        <ItemRows groupId={groupId} />
+                        <ItemRows />
                     </Suspense>
                 </TableBody>
                 <TableFooter>

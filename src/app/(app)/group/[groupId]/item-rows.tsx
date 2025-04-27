@@ -1,10 +1,12 @@
 "use client";
 
+import { TableCell, TableRow } from "@/components/ui/table";
 import { useTRPC } from "@/trpc/client";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { TableCell, TableRow } from "@/components/ui/table";
+import { useParams } from "next/navigation";
 
-export function ItemRows({ groupId }: { groupId: string }) {
+export function ItemRows() {
+    const { groupId } = useParams<{ groupId: string }>();
     const trpc = useTRPC();
     const { data: items } = useSuspenseQuery(
         trpc.getItems.queryOptions({ groupId: groupId }),

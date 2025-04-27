@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { LucideSettings } from "lucide-react";
+import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { AddItemForm } from "./add-item-form";
 import { AddMembersForm } from "./add-members-form";
@@ -51,7 +52,8 @@ const SETTINGS = {
 
 type SettingsKey = keyof typeof SETTINGS;
 
-export function SettingsDropdown({ groupId }: { groupId: string }) {
+export function SettingsDropdown() {
+    const { groupId } = useParams<{ groupId: string }>();
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [itemOpen, setItemOpen] = useState(false);
     const [contentKey, setContentKey] = useState<SettingsKey>();
