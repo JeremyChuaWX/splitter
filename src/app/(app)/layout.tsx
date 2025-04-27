@@ -8,16 +8,18 @@ export default function Layout({
     children: React.ReactNode;
 }>) {
     return (
-        <div className="flex flex-col items-center p-6 h-svh">
+        <div className="flex flex-col items-center h-svh w-svw">
             <Navbar />
-            {children}
+            <div className="flex flex-col items-center p-6 w-full h-full">
+                {children}
+            </div>
         </div>
     );
 }
 
 function Navbar() {
     return (
-        <div className="flex gap-2 w-full">
+        <div className="flex gap-2 items-center p-4 w-full border-b">
             <h1 className="flex-1 w-full text-xl font-extrabold">
                 <Link href="/">Splitter</Link>
             </h1>
