@@ -1,6 +1,5 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { useTRPC } from "@/trpc/client";
 import { useSuspenseQuery } from "@tanstack/react-query";
@@ -25,20 +24,13 @@ export function GroupList() {
     );
 }
 
-function GroupCard({
-    group,
-}: {
-    group: { id: string; name: string; role: string };
-}) {
+function GroupCard({ group }: { group: { id: string; name: string } }) {
     return (
         <Link href={`/group/${group.id}`}>
             <Card className="transition-all hover:cursor-pointer hover:bg-background">
                 <CardContent className="flex items-center">
                     <div className="flex flex-1 gap-1 items-center">
                         <CardTitle>{group.name}</CardTitle>
-                        <Badge variant="secondary" className="capitalize">
-                            {group.role}
-                        </Badge>
                     </div>
                     <span>$123.45</span>
                 </CardContent>

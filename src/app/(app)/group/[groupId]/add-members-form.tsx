@@ -11,13 +11,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import {
     Table,
     TableBody,
     TableCell,
@@ -25,7 +18,6 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { type Role } from "@/db/schema";
 import { cn } from "@/lib/utils";
 import { useTRPC } from "@/trpc/client";
 import { addMembersSchema } from "@/trpc/routers/validators";
@@ -45,8 +37,7 @@ export function AddMembersForm({
 }: SettingsContentProps) {
     const trpc = useTRPC();
     const queryClient = useQueryClient();
-    const [currentEmail, setCurrentEmail] = useState("");
-    const [currentRole, setCurrentRole] = useState<Role>("user");
+    const [username, setUsername] = useState("");
 
     const addMembersFormSchema = addMembersSchema.omit({
         groupId: true,
@@ -71,8 +62,7 @@ export function AddMembersForm({
                 await queryClient.invalidateQueries({});
                 toast.success("Members added successfully");
                 form.reset();
-                setCurrentEmail("");
-                setCurrentRole("user");
+                setUsername("");
                 closeFunction();
             },
             onError: (error) => {
@@ -90,24 +80,15 @@ export function AddMembersForm({
     }
 
     const handleAddMemberToList = () => {
-        const emailValidation = z.string().email().safeParse(currentEmail);
-        if (!emailValidation.success) {
-            toast.error("Invalid Email");
-            return;
-        }
-
-        const existingEmails = form
+        const existingUsernames = form
             .getValues("members")
-            .map((m) => m.email.toLowerCase());
-        if (existingEmails.includes(currentEmail.toLowerCase())) {
-            toast.error("Duplicate Email");
+            .map((m) => m.username.toLowerCase());
+        if (existingUsernames.includes(username.toLowerCase())) {
+            toast.error("Duplicate Username");
             return;
         }
-
-        append({ email: currentEmail, role: currentRole });
-
-        setCurrentEmail("");
-        setCurrentRole("user");
+        append({ username: username });
+        setUsername("");
     };
 
     return (
@@ -115,14 +96,12 @@ export function AddMembersForm({
             <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-6">
                 <div className="grid grid-cols-1 gap-2 items-end sm:grid-cols-[1fr_auto_auto]">
                     <FormItem>
-                        <FormLabel>Email Address</FormLabel>
+                        <FormLabel>Username</FormLabel>
                         <FormControl>
                             <Input
-                                placeholder="new.member@example.com"
-                                value={currentEmail}
-                                onChange={(e) =>
-                                    setCurrentEmail(e.target.value)
-                                }
+                                placeholder="Username"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
                                 onKeyDown={(e) => {
                                     if (e.key === "Enter") {
                                         e.preventDefault();
@@ -133,33 +112,13 @@ export function AddMembersForm({
                         </FormControl>
                     </FormItem>
 
-                    <FormItem>
-                        <FormLabel>Role</FormLabel>
-                        <Select
-                            value={currentRole}
-                            onValueChange={(value) =>
-                                setCurrentRole(value as Role)
-                            }
-                        >
-                            <FormControl>
-                                <SelectTrigger className="w-[110px]">
-                                    <SelectValue placeholder="Select role" />
-                                </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                                <SelectItem value="admin">Admin</SelectItem>
-                                <SelectItem value="user">User</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </FormItem>
-
                     <Button
                         type="button"
                         size="icon"
                         variant="outline"
                         onClick={handleAddMemberToList}
                         aria-label="Add member to list"
-                        disabled={!currentEmail}
+                        disabled={!username}
                     >
                         <LucidePlus className="w-4 h-4" />
                     </Button>
@@ -178,10 +137,7 @@ export function AddMembersForm({
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead>Email</TableHead>
-                                            <TableHead className="w-[130px]">
-                                                Role
-                                            </TableHead>
+                                            <TableHead>Username</TableHead>
                                             <TableHead className="w-[50px]"></TableHead>
                                         </TableRow>
                                     </TableHeader>
@@ -190,41 +146,8 @@ export function AddMembersForm({
                                             <TableRow key={field.id}>
                                                 <TableCell className="font-medium break-all">
                                                     {form.getValues(
-                                                        `members.${index}.email`,
+                                                        `members.${index}.username`,
                                                     )}
-                                                </TableCell>
-
-                                                <TableCell>
-                                                    <FormField
-                                                        control={form.control}
-                                                        name={`members.${index}.role`}
-                                                        render={({ field }) => (
-                                                            <FormItem>
-                                                                <Select
-                                                                    onValueChange={
-                                                                        field.onChange
-                                                                    }
-                                                                    defaultValue={
-                                                                        field.value
-                                                                    }
-                                                                >
-                                                                    <FormControl>
-                                                                        <SelectTrigger>
-                                                                            <SelectValue placeholder="Select role" />
-                                                                        </SelectTrigger>
-                                                                    </FormControl>
-                                                                    <SelectContent>
-                                                                        <SelectItem value="admin">
-                                                                            Admin
-                                                                        </SelectItem>
-                                                                        <SelectItem value="user">
-                                                                            User
-                                                                        </SelectItem>
-                                                                    </SelectContent>
-                                                                </Select>
-                                                            </FormItem>
-                                                        )}
-                                                    />
                                                 </TableCell>
 
                                                 <TableCell className="text-right">
