@@ -179,7 +179,7 @@ export const appRouter = createTRPCRouter({
     removeMembers: protectedProcedure
         .input(v.removeMembersSchema)
         .mutation(async ({ ctx, input }) => {
-            if (input.memberIds.length === 0) {
+            if (input.members.length === 0) {
                 return;
             }
             if (!(await isGroupMember(ctx, input.groupId))) {
@@ -188,14 +188,15 @@ export const appRouter = createTRPCRouter({
                     code: "NOT_FOUND",
                 });
             }
-            await ctx.db
-                .delete(groupMembershipTable)
-                .where(
-                    and(
-                        eq(groupMembershipTable.groupId, input.groupId),
-                        inArray(groupMembershipTable.userId, input.memberIds),
+            await ctx.db.delete(groupMembershipTable).where(
+                and(
+                    eq(groupMembershipTable.groupId, input.groupId),
+                    inArray(
+                        groupMembershipTable.userId,
+                        input.members.map((member) => member.id),
                     ),
-                );
+                ),
+            );
         }),
 
     getItems: protectedProcedure
@@ -238,28 +239,28 @@ export const appRouter = createTRPCRouter({
                         data: {},
                     })
                     .returning({ id: itemTable.id });
-                if (input.creditUserIds.length > 0) {
+                if (input.payerIds.length > 0) {
                     const creditAmount = BigInt(0); // input.amount / input.creditUserIds.length
                     await tx.insert(creditTable).values(
-                        input.creditUserIds.map(
-                            (userId) =>
+                        input.payerIds.map(
+                            (payerId) =>
                                 ({
                                     itemId: item.id,
-                                    userId: userId,
+                                    userId: payerId,
                                     amount: creditAmount,
                                     data: {},
                                 }) satisfies typeof creditTable.$inferInsert,
                         ),
                     );
                 }
-                if (input.debitUserIds.length > 0) {
+                if (input.payeeIds.length > 0) {
                     const debitAmount = BigInt(0); // input.amount / input.debitUserIds.length
                     await tx.insert(debitTable).values(
-                        input.debitUserIds.map(
-                            (userId) =>
+                        input.payeeIds.map(
+                            (payeeId) =>
                                 ({
                                     itemId: item.id,
-                                    userId: userId,
+                                    userId: payeeId,
                                     amount: debitAmount,
                                     data: {},
                                 }) satisfies typeof debitTable.$inferInsert,
@@ -272,7 +273,7 @@ export const appRouter = createTRPCRouter({
     removeItems: protectedProcedure
         .input(v.removeItemsSchema)
         .mutation(async ({ ctx, input }) => {
-            if (input.itemIds.length === 0) {
+            if (input.items.length === 0) {
                 return;
             }
             if (!(await isGroupMember(ctx, input.groupId))) {
@@ -290,7 +291,10 @@ export const appRouter = createTRPCRouter({
                     .where(
                         and(
                             eq(itemTable.groupId, input.groupId),
-                            inArray(itemTable.id, input.itemIds),
+                            inArray(
+                                itemTable.id,
+                                input.items.map((item) => item.id),
+                            ),
                             isNull(itemTable.deletedAt),
                         ),
                     );

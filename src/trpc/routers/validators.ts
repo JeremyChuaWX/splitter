@@ -1,38 +1,34 @@
 import { z } from "zod";
 
 export const createGroupSchema = z.object({
-    name: z.string(),
+    name: z.string().nonempty(),
 });
 
 export const getDetailedGroupSchema = z.object({
-    groupId: z.string(),
+    groupId: z.string().nonempty(),
 });
 
 export const updateGroupSchema = z.object({
-    groupId: z.string(),
+    groupId: z.string().nonempty(),
     name: z.union([z.string().nonempty(), z.undefined()]),
 });
 
 export const deleteGroupSchema = z.object({
-    groupId: z.string(),
+    groupId: z.string().nonempty(),
 });
 
 export const getMembersSchema = z.object({
-    groupId: z.string(),
+    groupId: z.string().nonempty(),
 });
 
 export const addMembersSchema = z.object({
-    groupId: z.string(),
-    members: z.array(
-        z.object({
-            username: z.string(),
-        }),
-    ),
+    groupId: z.string().nonempty(),
+    members: z.array(z.object({ username: z.string().nonempty() })).nonempty(),
 });
 
 export const removeMembersSchema = z.object({
-    groupId: z.string(),
-    memberIds: z.array(z.string()),
+    groupId: z.string().nonempty(),
+    members: z.array(z.object({ id: z.string() })).nonempty(),
 });
 
 export const getItemsSchema = z.object({
@@ -40,20 +36,20 @@ export const getItemsSchema = z.object({
 });
 
 export const addItemSchema = z.object({
-    groupId: z.string(),
-    name: z.string(),
-    amount: z.number(),
-    debitUserIds: z.array(z.string()).nonempty(),
-    creditUserIds: z.array(z.string()).nonempty(),
+    groupId: z.string().nonempty(),
+    name: z.string().nonempty(),
+    amount: z.number().nonnegative(),
+    payeeIds: z.array(z.string().nonempty()).nonempty(),
+    payerIds: z.array(z.string().nonempty()).nonempty(),
 });
 
 export const removeItemsSchema = z.object({
-    groupId: z.string(),
-    itemIds: z.array(z.string()),
+    groupId: z.string().nonempty(),
+    items: z.array(z.object({ id: z.string().nonempty() })).nonempty(),
 });
 
 export const updateItemSchema = z.object({
-    groupId: z.string(),
+    groupId: z.string().nonempty(),
     name: z.union([z.string().nonempty(), z.undefined()]),
-    amount: z.union([z.number(), z.undefined()]),
+    amount: z.union([z.number().nonnegative(), z.undefined()]),
 });
