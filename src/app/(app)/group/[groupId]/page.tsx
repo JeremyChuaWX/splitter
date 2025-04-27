@@ -25,7 +25,7 @@ export default async function Page({ params }: Props) {
 
     return (
         <HydrateClient>
-            <div className="flex flex-col gap-6 pt-24 w-2/3">
+            <div className="flex flex-col gap-6 pt-24 w-full max-w-[650px]">
                 <Suspense fallback={<Skeleton className="w-full h-12" />}>
                     <Header />
                 </Suspense>
