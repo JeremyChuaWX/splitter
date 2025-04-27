@@ -71,7 +71,7 @@ export function AddMembersForm({
         });
     }
 
-    const handleAddMemberToList = () => {
+    function handleAddMemberToList() {
         const existingUsernames = form
             .getValues("members")
             .map((m) => m.username.toLowerCase());
@@ -81,7 +81,7 @@ export function AddMembersForm({
         }
         append({ username: username });
         setUsername("");
-    };
+    }
 
     return (
         <Form {...form}>
