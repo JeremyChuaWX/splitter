@@ -35,7 +35,7 @@ import { type SettingsContentProps } from "./settings-dropdown";
 
 const addItemFormSchema = z.object({
     name: z.string().nonempty(),
-    amount: z.number().nonnegative(),
+    amount: z.number().gt(0),
     payeeIds: z.array(z.string().nonempty()).min(1),
     payerIds: z.array(z.string().nonempty()).min(1),
 });
@@ -195,6 +195,7 @@ function MemberCombobox({
             render={({ field }) => (
                 <FormItem>
                     <FormLabel>{label}</FormLabel>
+                    <FormMessage />
                     <Command>
                         <CommandInput
                             placeholder="Search member..."
