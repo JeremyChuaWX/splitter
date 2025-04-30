@@ -10,9 +10,7 @@ export default function Layout({
     return (
         <div className="flex flex-col items-center h-svh w-svw">
             <Navbar />
-            <div className="flex flex-col items-center p-6 w-full h-full">
-                {children}
-            </div>
+            <div className="p-6 w-full h-full max-w-[650px]">{children}</div>
         </div>
     );
 }

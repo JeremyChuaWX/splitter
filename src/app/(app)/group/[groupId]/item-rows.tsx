@@ -30,8 +30,6 @@ function ItemRow({
     return (
         <TableRow>
             <TableCell className="font-medium">{item.name}</TableCell>
-            <TableCell>Alice, Bob, Charlie</TableCell>
-            <TableCell>Alice, Bob, Charlie</TableCell>
             <TableCell className="text-right">
                 ${bigintToCurrency(item.amount)}
             </TableCell>
