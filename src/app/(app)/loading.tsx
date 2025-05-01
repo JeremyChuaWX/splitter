@@ -17,14 +17,21 @@ export default function Loading() {
     }, []);
 
     return (
-        <div className="flex justify-center items-center">
-            <Loader2
-                size={24}
-                className={cn(
-                    "animate-spin transition-opacity duration-300 ease-in",
-                    show ? "opacity-100" : "opacity-0",
-                )}
-            />
+        <div
+            className={cn(
+                "flex items-center justify-center transition-opacity duration-300 ease-in",
+                show ? "opacity-100" : "opacity-0",
+            )}
+            role="status"
+            aria-busy={show}
+        >
+            <div className="flex gap-2 items-center text-muted-foreground">
+                <Loader2
+                    size={24}
+                    className="animate-spin"
+                    aria-hidden="true"
+                />
+            </div>
         </div>
     );
 }
