@@ -84,7 +84,7 @@ export function SettingsDropdown() {
                             onClick={() => handleOpenItem(key)}
                             className="cursor-pointer"
                         >
-                            {SETTINGS[key].title} {/* Use title from config */}
+                            {SETTINGS[key].title}
                         </DropdownMenuItem>
                     ))}
                 </DropdownMenuContent>
