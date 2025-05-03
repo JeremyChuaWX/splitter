@@ -1,18 +1,18 @@
-import { HydrateClient, prefetch, trpc } from "@/trpc/server";
-import { Suspense } from "react";
-import { ItemRows } from "./item-rows";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
     Table,
     TableBody,
-    TableCell,
-    TableRow,
-    TableFooter,
     TableCaption,
+    TableCell,
+    TableFooter,
+    TableRow,
 } from "@/components/ui/table";
-import { Skeleton } from "@/components/ui/skeleton";
+import { HydrateClient, prefetch, trpc } from "@/trpc/server";
+import { Suspense } from "react";
+import { AddItemButton } from "./add-item-button";
+import { AddMembersButton } from "./add-members-button";
 import { Header } from "./header";
-import { LucidePlus } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ItemRows } from "./item-rows";
 
 type Props = {
     params: Promise<{ groupId: string }>;
@@ -65,13 +65,7 @@ function ItemSection() {
                     </TableRow>
                 </TableFooter>
                 <TableCaption>
-                    <Button
-                        variant="outline"
-                        className="flex gap-1 justify-center items-center w-full"
-                    >
-                        <LucidePlus size={16} />
-                        Add Item
-                    </Button>
+                    <AddItemButton />
                 </TableCaption>
             </Table>
         </div>
@@ -117,13 +111,7 @@ function BalanceSection() {
                     </TableRow>
                 </TableFooter>
                 <TableCaption>
-                    <Button
-                        variant="outline"
-                        className="flex gap-1 justify-center items-center w-full"
-                    >
-                        <LucidePlus size={16} />
-                        Add Member
-                    </Button>
+                    <AddMembersButton />
                 </TableCaption>
             </Table>
         </div>
