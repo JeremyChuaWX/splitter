@@ -14,6 +14,7 @@ export function AddMembersButton() {
     return (
         <>
             <Button
+                onClick={() => setOpen(true)}
                 variant="outline"
                 className="flex gap-1 justify-center items-center w-full"
             >
