@@ -38,7 +38,7 @@ export const getItemsSchema = z.object({
 export const addItemSchema = z.object({
     groupId: z.string().nonempty(),
     name: z.string().nonempty(),
-    amount: z.number().nonnegative(),
+    amount: z.number().positive(),
     payeeIds: z.array(z.string().nonempty()).min(1),
     payerIds: z.array(z.string().nonempty()).min(1),
 });

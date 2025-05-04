@@ -231,7 +231,9 @@ export const appRouter = createTRPCRouter({
                     code: "NOT_FOUND",
                 });
             }
+
             const parsedAmount = numberToBigint(input.amount);
+
             await ctx.db.transaction(async (tx) => {
                 const [item] = await tx
                     .insert(itemTable)
@@ -243,34 +245,39 @@ export const appRouter = createTRPCRouter({
                         },
                     })
                     .returning({ id: itemTable.id });
-                if (input.payerIds.length > 0) {
-                    const creditAmount = BigInt(0); // input.amount / input.creditUserIds.length
-                    await tx.insert(creditTable).values(
-                        input.payerIds.map(
-                            (payerId) =>
-                                ({
-                                    itemId: item.id,
-                                    userId: payerId,
-                                    amount: creditAmount,
-                                    data: {},
-                                }) satisfies typeof creditTable.$inferInsert,
-                        ),
-                    );
-                }
-                if (input.payeeIds.length > 0) {
-                    const debitAmount = BigInt(0); // input.amount / input.debitUserIds.length
-                    await tx.insert(debitTable).values(
-                        input.payeeIds.map(
-                            (payeeId) =>
-                                ({
-                                    itemId: item.id,
-                                    userId: payeeId,
-                                    amount: debitAmount,
-                                    data: {},
-                                }) satisfies typeof debitTable.$inferInsert,
-                        ),
-                    );
-                }
+
+                const numPayers = BigInt(input.payerIds.length);
+                const creditAmount = parsedAmount / numPayers;
+                const creditRemainder = parsedAmount % numPayers;
+                const creditsToInsert = input.payerIds.map((payerId, index) => {
+                    const remainder = BigInt(index) < creditRemainder ? 1n : 0n;
+                    const amount = creditAmount + remainder;
+                    return {
+                        itemId: item.id,
+                        userId: payerId,
+                        amount: amount,
+                        data: {},
+                    } satisfies typeof creditTable.$inferInsert;
+                });
+
+                const numPayees = BigInt(input.payeeIds.length);
+                const debitAmount = parsedAmount / numPayees;
+                const debitRemainder = parsedAmount % numPayees;
+                const debitsToInsert = input.payeeIds.map((payerId, index) => {
+                    const remainder = BigInt(index) < debitRemainder ? 1n : 0n;
+                    const amount = debitAmount + remainder;
+                    return {
+                        itemId: item.id,
+                        userId: payerId,
+                        amount: amount,
+                        data: {},
+                    } satisfies typeof debitTable.$inferInsert;
+                });
+
+                await Promise.all([
+                    tx.insert(creditTable).values(creditsToInsert),
+                    tx.insert(debitTable).values(debitsToInsert),
+                ]);
             });
         }),
 
