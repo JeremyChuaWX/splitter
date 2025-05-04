@@ -2,9 +2,9 @@
 
 import { useTRPC } from "@/trpc/client";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { useParams } from "next/navigation";
-import Link from "next/link";
 import { LucideChevronLeft } from "lucide-react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
 
 export function Header() {
     const { groupId } = useParams<{ groupId: string }>();

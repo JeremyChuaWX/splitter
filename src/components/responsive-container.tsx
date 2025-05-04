@@ -1,6 +1,5 @@
 "use client";
 
-import { useMediaQuery } from "@/hooks/use-media-query";
 import {
     Dialog,
     DialogClose,
@@ -15,6 +14,7 @@ import {
     DrawerHeader,
     DrawerTitle,
 } from "@/components/ui/drawer";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import { isValidElement, useMemo } from "react";
 
 type ResponsiveContainerProps = {

@@ -1,5 +1,6 @@
 "use client";
 
+import { type SettingsContentProps } from "./settings-dropdown";
 import { Button } from "@/components/ui/button";
 import {
     Command,
@@ -31,7 +32,6 @@ import { useParams } from "next/navigation";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { type SettingsContentProps } from "./settings-dropdown";
 
 const addItemFormSchema = z.object({
     name: z.string().nonempty(),

@@ -1,5 +1,7 @@
 "use client";
 
+import { AddItemForm } from "./add-item-form";
+import { AddMembersForm } from "./add-members-form";
 import { ResponsiveContainer } from "@/components/responsive-container";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,8 +13,6 @@ import {
 import { LucideSettings } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
-import { AddItemForm } from "./add-item-form";
-import { AddMembersForm } from "./add-members-form";
 
 export type SettingsContentProps = {
     groupId: string;

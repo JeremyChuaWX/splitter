@@ -1,10 +1,10 @@
+import "./globals.css";
+import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
+import { TRPCReactProvider } from "@/trpc/client";
+import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import { ClerkProvider } from "@clerk/nextjs";
-import { TRPCReactProvider } from "@/trpc/client";
-import { Toaster } from "@/components/ui/sonner";
-import { ThemeProvider } from "@/components/theme-provider";
 
 const geistSans = Geist({
     variable: "--font-geist-sans",

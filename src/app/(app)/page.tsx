@@ -1,10 +1,10 @@
-export const dynamic = "force-dynamic";
-
+import { CreateGroupButton } from "./create-group-button";
+import { GroupList } from "./group-list";
 import { Skeleton } from "@/components/ui/skeleton";
 import { HydrateClient, prefetch, trpc } from "@/trpc/server";
 import { Suspense } from "react";
-import { CreateGroupButton } from "./create-group-button";
-import { GroupList } from "./group-list";
+
+export const dynamic = "force-dynamic";
 
 export default function Page() {
     prefetch(trpc.getGroups.queryOptions());

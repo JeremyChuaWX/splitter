@@ -1,3 +1,7 @@
+import { AddItemButton } from "./add-item-button";
+import { AddMembersButton } from "./add-members-button";
+import { Header } from "./header";
+import { ItemRows } from "./item-rows";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
     Table,
@@ -9,10 +13,6 @@ import {
 } from "@/components/ui/table";
 import { HydrateClient, prefetch, trpc } from "@/trpc/server";
 import { Suspense } from "react";
-import { AddItemButton } from "./add-item-button";
-import { AddMembersButton } from "./add-members-button";
-import { Header } from "./header";
-import { ItemRows } from "./item-rows";
 
 type Props = {
     params: Promise<{ groupId: string }>;

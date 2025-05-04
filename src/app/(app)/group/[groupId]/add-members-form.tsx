@@ -1,5 +1,6 @@
 "use client";
 
+import { type SettingsContentProps } from "./settings-dropdown";
 import { Button } from "@/components/ui/button";
 import {
     Form,
@@ -20,7 +21,6 @@ import { useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { type SettingsContentProps } from "./settings-dropdown";
 
 export function AddMembersForm({
     groupId,
