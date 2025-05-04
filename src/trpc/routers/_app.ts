@@ -3,7 +3,7 @@ import * as v from "./validators";
 import {
     creditTable,
     debitTable,
-    groupMembershipTable,
+    membershipTable,
     groupTable,
     itemTable,
 } from "@/db/schema";
@@ -19,11 +19,12 @@ export const appRouter = createTRPCRouter({
                 const [group] = await tx
                     .insert(groupTable)
                     .values({
-                        name: input.name,
-                        data: {},
+                        data: {
+                            name: input.name,
+                        },
                     })
                     .returning({ id: groupTable.id });
-                await tx.insert(groupMembershipTable).values({
+                await tx.insert(membershipTable).values({
                     groupId: group.id,
                     userId: ctx.auth.userId,
                     data: {},
@@ -36,16 +37,16 @@ export const appRouter = createTRPCRouter({
         return await ctx.db
             .select({
                 id: groupTable.id,
-                name: groupTable.name,
+                name: sql`${groupTable.data}->>'name'`,
             })
             .from(groupTable)
             .innerJoin(
-                groupMembershipTable,
-                eq(groupMembershipTable.groupId, groupTable.id),
+                membershipTable,
+                eq(membershipTable.groupId, groupTable.id),
             )
             .where(
                 and(
-                    eq(groupMembershipTable.userId, ctx.auth.userId),
+                    eq(membershipTable.userId, ctx.auth.userId),
                     isNull(groupTable.deletedAt),
                 ),
             );
@@ -56,16 +57,16 @@ export const appRouter = createTRPCRouter({
         .query(async ({ ctx, input }) => {
             const check = await ctx.db
                 .select({
-                    name: groupTable.name,
+                    name: sql`${groupTable.data}->>'name'`,
                 })
                 .from(groupTable)
                 .innerJoin(
-                    groupMembershipTable,
-                    eq(groupMembershipTable.groupId, groupTable.id),
+                    membershipTable,
+                    eq(membershipTable.groupId, groupTable.id),
                 )
                 .where(
                     and(
-                        eq(groupMembershipTable.userId, ctx.auth.userId),
+                        eq(membershipTable.userId, ctx.auth.userId),
                         eq(groupTable.id, input.groupId),
                         isNull(groupTable.deletedAt),
                     ),
@@ -95,7 +96,9 @@ export const appRouter = createTRPCRouter({
             await ctx.db
                 .update(groupTable)
                 .set({
-                    name: input.name,
+                    data: {
+                        name: input.name,
+                    },
                 })
                 .where(
                     and(
@@ -133,10 +136,10 @@ export const appRouter = createTRPCRouter({
             }
             const members = await ctx.db
                 .select({
-                    id: groupMembershipTable.userId,
+                    id: membershipTable.userId,
                 })
-                .from(groupMembershipTable)
-                .where(eq(groupMembershipTable.groupId, input.groupId));
+                .from(membershipTable)
+                .where(eq(membershipTable.groupId, input.groupId));
             const clerkUsers = (
                 await ctx.clerk.users.getUserList({
                     userId: members.map((member) => member.id),
@@ -169,9 +172,9 @@ export const appRouter = createTRPCRouter({
                 groupId: input.groupId,
                 userId: user.id,
                 data: {},
-            })) satisfies (typeof groupMembershipTable.$inferInsert)[];
+            })) satisfies (typeof membershipTable.$inferInsert)[];
             await ctx.db
-                .insert(groupMembershipTable)
+                .insert(membershipTable)
                 .values(members)
                 .onConflictDoNothing();
         }),
@@ -188,11 +191,11 @@ export const appRouter = createTRPCRouter({
                     code: "NOT_FOUND",
                 });
             }
-            await ctx.db.delete(groupMembershipTable).where(
+            await ctx.db.delete(membershipTable).where(
                 and(
-                    eq(groupMembershipTable.groupId, input.groupId),
+                    eq(membershipTable.groupId, input.groupId),
                     inArray(
-                        groupMembershipTable.userId,
+                        membershipTable.userId,
                         input.members.map((member) => member.id),
                     ),
                 ),
@@ -211,7 +214,7 @@ export const appRouter = createTRPCRouter({
             return await ctx.db
                 .select({
                     id: itemTable.id,
-                    name: itemTable.name,
+                    name: sql`${itemTable.data}->>'name'`,
                     amount: itemTable.amount,
                     data: itemTable.data,
                 })
@@ -234,9 +237,10 @@ export const appRouter = createTRPCRouter({
                     .insert(itemTable)
                     .values({
                         groupId: input.groupId,
-                        name: input.name,
                         amount: parsedAmount,
-                        data: {},
+                        data: {
+                            name: input.name,
+                        },
                     })
                     .returning({ id: itemTable.id });
                 if (input.payerIds.length > 0) {
@@ -323,13 +327,10 @@ async function isGroupMember(ctx: TRPCContext, groupId: string) {
     const check = await ctx.db
         .select({})
         .from(groupTable)
-        .innerJoin(
-            groupMembershipTable,
-            eq(groupMembershipTable.groupId, groupTable.id),
-        )
+        .innerJoin(membershipTable, eq(membershipTable.groupId, groupTable.id))
         .where(
             and(
-                eq(groupMembershipTable.userId, ctx.auth.userId),
+                eq(membershipTable.userId, ctx.auth.userId),
                 eq(groupTable.id, groupId),
                 isNull(groupTable.deletedAt),
             ),
