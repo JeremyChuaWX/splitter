@@ -37,7 +37,7 @@ export const appRouter = createTRPCRouter({
         return await ctx.db
             .select({
                 id: groupTable.id,
-                name: sql`${groupTable.data}->>'name'`,
+                name: sql<string>`${groupTable.data}->>'name'`,
             })
             .from(groupTable)
             .innerJoin(
@@ -57,7 +57,7 @@ export const appRouter = createTRPCRouter({
         .query(async ({ ctx, input }) => {
             const check = await ctx.db
                 .select({
-                    name: sql`${groupTable.data}->>'name'`,
+                    name: sql<string>`${groupTable.data}->>'name'`,
                 })
                 .from(groupTable)
                 .innerJoin(
@@ -214,7 +214,7 @@ export const appRouter = createTRPCRouter({
             return await ctx.db
                 .select({
                     id: itemTable.id,
-                    name: sql`${itemTable.data}->>'name'`,
+                    name: sql<string>`${itemTable.data}->>'name'`,
                     amount: itemTable.amount,
                     data: itemTable.data,
                 })
