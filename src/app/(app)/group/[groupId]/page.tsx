@@ -1,5 +1,6 @@
 import { AddItemButton } from "./add-item-button";
 import { AddMembersButton } from "./add-members-button";
+import { BalanceSection } from "./balance-section";
 import { Header } from "./header";
 import { ItemSection } from "./item-section";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -23,6 +24,7 @@ export default async function Page({ params }: Props) {
     prefetch(trpc.getGroup.queryOptions({ groupId: groupId }));
     prefetch(trpc.getItemsWithTotal.queryOptions({ groupId: groupId }));
     prefetch(trpc.getMembers.queryOptions({ groupId: groupId }));
+    prefetch(trpc.getBalances.queryOptions({ groupId: groupId }));
 
     return (
         <HydrateClient>
@@ -34,7 +36,9 @@ export default async function Page({ params }: Props) {
                     <Suspense fallback={<ItemSectionSkeleton />}>
                         <ItemSection />
                     </Suspense>
-                    <BalanceSection />
+                    <Suspense fallback={<BalanceSectionSkeleton />}>
+                        <BalanceSection />
+                    </Suspense>
                 </div>
             </div>
         </HydrateClient>
@@ -79,20 +83,20 @@ function ItemRowSkeleton() {
     );
 }
 
-function BalanceSection() {
+function BalanceSectionSkeleton() {
     return (
         <div className="flex flex-col gap-6">
             <h2 className="text-xl font-medium">Balances</h2>
             <Table>
                 <TableBody>
-                    <ItemRowSkeleton />
-                    <ItemRowSkeleton />
-                    <ItemRowSkeleton />
+                    <BalanceRowSkeleton />
+                    <BalanceRowSkeleton />
+                    <BalanceRowSkeleton />
                 </TableBody>
                 <TableFooter>
                     <TableRow>
-                        <TableCell className="text-right" colSpan={2}>
-                            $123.45
+                        <TableCell colSpan={2}>
+                            <Skeleton className="h-5" />
                         </TableCell>
                     </TableRow>
                 </TableFooter>
@@ -101,5 +105,18 @@ function BalanceSection() {
                 </TableCaption>
             </Table>
         </div>
+    );
+}
+
+function BalanceRowSkeleton() {
+    return (
+        <TableRow>
+            <TableCell>
+                <Skeleton className="h-5" />
+            </TableCell>
+            <TableCell>
+                <Skeleton className="h-5" />
+            </TableCell>
+        </TableRow>
     );
 }

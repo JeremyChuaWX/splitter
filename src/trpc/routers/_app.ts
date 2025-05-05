@@ -202,26 +202,6 @@ export const appRouter = createTRPCRouter({
             );
         }),
 
-    getItems: protectedProcedure
-        .input(v.getItemsSchema)
-        .query(async ({ ctx, input }) => {
-            if (!(await isGroupMember(ctx, input.groupId))) {
-                throw new TRPCError({
-                    message: "group not found",
-                    code: "NOT_FOUND",
-                });
-            }
-            return await ctx.db
-                .select({
-                    id: itemTable.id,
-                    name: sql<string>`${itemTable.data}->>'name'`,
-                    amount: itemTable.amount,
-                    data: itemTable.data,
-                })
-                .from(itemTable)
-                .where(eq(itemTable.groupId, input.groupId));
-        }),
-
     getItemsWithTotal: protectedProcedure
         .input(v.getItemsWithTotalSchema)
         .query(async ({ ctx, input }) => {
@@ -353,6 +333,75 @@ export const appRouter = createTRPCRouter({
                     code: "NOT_FOUND",
                 });
             }
+        }),
+
+    getBalances: protectedProcedure
+        .input(v.getBalancesSchema)
+        .query(async ({ ctx, input }) => {
+            if (!(await isGroupMember(ctx, input.groupId))) {
+                throw new TRPCError({
+                    message: "group not found",
+                    code: "NOT_FOUND",
+                });
+            }
+
+            const credits = ctx.db
+                .select({
+                    userId: creditTable.userId,
+                    amount: creditTable.amount,
+                })
+                .from(membershipTable)
+                .innerJoin(
+                    creditTable,
+                    eq(creditTable.userId, membershipTable.userId),
+                )
+                .where(eq(membershipTable.groupId, input.groupId))
+                .as("credits");
+
+            const debits = ctx.db
+                .select({
+                    userId: debitTable.userId,
+                    amount: debitTable.amount,
+                })
+                .from(membershipTable)
+                .innerJoin(
+                    debitTable,
+                    eq(debitTable.userId, membershipTable.userId),
+                )
+                .where(eq(membershipTable.groupId, input.groupId))
+                .as("debits");
+
+            const members = await ctx.db
+                .select({
+                    id: membershipTable.userId,
+                    balance:
+                        sql<string>`sum(${credits.amount}) - sum(${debits.amount})`.mapWith(
+                            BigInt,
+                        ),
+                })
+                .from(membershipTable)
+                .innerJoin(credits, eq(credits.userId, membershipTable.userId))
+                .innerJoin(debits, eq(debits.userId, membershipTable.userId))
+                .where(eq(membershipTable.groupId, input.groupId))
+                .groupBy(membershipTable.userId);
+
+            const balanceMap = new Map<string, bigint>();
+            for (const member of members) {
+                balanceMap.set(member.id, member.balance);
+            }
+
+            const clerkUsers = (
+                await ctx.clerk.users.getUserList({
+                    userId: Array.from(balanceMap.keys()),
+                    orderBy: "username",
+                })
+            ).data;
+
+            return clerkUsers.map((clerkUser) => ({
+                id: clerkUser.id,
+                username: clerkUser.username,
+                balance: balanceMap.get(clerkUser.id)!,
+            }));
         }),
 });
 

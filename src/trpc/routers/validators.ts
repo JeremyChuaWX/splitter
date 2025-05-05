@@ -57,3 +57,7 @@ export const updateItemSchema = z.object({
     name: z.union([z.string().nonempty(), z.undefined()]),
     amount: z.union([z.number().nonnegative(), z.undefined()]),
 });
+
+export const getBalancesSchema = z.object({
+    groupId: z.string().nonempty(),
+});
