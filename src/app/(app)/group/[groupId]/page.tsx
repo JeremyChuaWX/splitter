@@ -1,7 +1,7 @@
 import { AddItemButton } from "./add-item-button";
 import { AddMembersButton } from "./add-members-button";
 import { Header } from "./header";
-import { ItemRows } from "./item-rows";
+import { ItemSection } from "./item-section";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
     Table,
@@ -21,7 +21,7 @@ type Props = {
 export default async function Page({ params }: Props) {
     const { groupId } = await params;
     prefetch(trpc.getGroup.queryOptions({ groupId: groupId }));
-    prefetch(trpc.getItems.queryOptions({ groupId: groupId }));
+    prefetch(trpc.getItemsWithTotal.queryOptions({ groupId: groupId }));
     prefetch(trpc.getMembers.queryOptions({ groupId: groupId }));
 
     return (
@@ -31,7 +31,9 @@ export default async function Page({ params }: Props) {
                     <Header />
                 </Suspense>
                 <div className="grid grid-cols-2 gap-6">
-                    <ItemSection />
+                    <Suspense fallback={<ItemSectionSkeleton />}>
+                        <ItemSection />
+                    </Suspense>
                     <BalanceSection />
                 </div>
             </div>
@@ -39,28 +41,20 @@ export default async function Page({ params }: Props) {
     );
 }
 
-function ItemSection() {
+function ItemSectionSkeleton() {
     return (
         <div className="flex flex-col gap-6">
             <h2 className="text-xl font-medium">Items</h2>
             <Table>
                 <TableBody>
-                    <Suspense
-                        fallback={
-                            <>
-                                <ItemRowSkeleton />
-                                <ItemRowSkeleton />
-                                <ItemRowSkeleton />
-                            </>
-                        }
-                    >
-                        <ItemRows />
-                    </Suspense>
+                    <ItemRowSkeleton />
+                    <ItemRowSkeleton />
+                    <ItemRowSkeleton />
                 </TableBody>
                 <TableFooter>
                     <TableRow>
-                        <TableCell className="text-right" colSpan={2}>
-                            $123.45
+                        <TableCell colSpan={2}>
+                            <Skeleton className="h-5" />
                         </TableCell>
                     </TableRow>
                 </TableFooter>
@@ -91,17 +85,9 @@ function BalanceSection() {
             <h2 className="text-xl font-medium">Balances</h2>
             <Table>
                 <TableBody>
-                    <Suspense
-                        fallback={
-                            <>
-                                <ItemRowSkeleton />
-                                <ItemRowSkeleton />
-                                <ItemRowSkeleton />
-                            </>
-                        }
-                    >
-                        <ItemRows />
-                    </Suspense>
+                    <ItemRowSkeleton />
+                    <ItemRowSkeleton />
+                    <ItemRowSkeleton />
                 </TableBody>
                 <TableFooter>
                     <TableRow>

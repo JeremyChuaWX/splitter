@@ -64,7 +64,7 @@ export function AddItemForm({
         trpc.addItem.mutationOptions({
             onSuccess: async () => {
                 await queryClient.invalidateQueries({
-                    queryKey: trpc.getItems.queryKey({
+                    queryKey: trpc.getItemsWithTotal.queryKey({
                         groupId: groupId,
                     }),
                 });
