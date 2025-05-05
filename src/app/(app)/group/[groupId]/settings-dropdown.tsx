@@ -1,7 +1,6 @@
 "use client";
 
-import { AddItemForm } from "./add-item-form";
-import { AddMembersForm } from "./add-members-form";
+import { EditGroupForm } from "./edit-group-form";
 import { ResponsiveContainer } from "@/components/responsive-container";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,13 +25,9 @@ type SettingsItem = {
 };
 
 const SETTINGS = {
-    "add-item": {
-        title: "Add Item",
-        content: AddItemForm,
-    } satisfies SettingsItem,
-    "add-members": {
-        title: "Add Members",
-        content: AddMembersForm,
+    "edit-group": {
+        title: "Edit Group",
+        content: EditGroupForm,
     } satisfies SettingsItem,
 };
 

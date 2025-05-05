@@ -1,5 +1,6 @@
 "use client";
 
+import { SettingsDropdown } from "./settings-dropdown";
 import { useTRPC } from "@/trpc/client";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { LucideChevronLeft } from "lucide-react";
@@ -21,7 +22,7 @@ export function Header() {
                     <h1 className="text-2xl font-bold">{group.name}</h1>
                 </Link>
             </div>
-            {/* <SettingsDropdown /> */}
+            <SettingsDropdown />
         </div>
     );
 }
