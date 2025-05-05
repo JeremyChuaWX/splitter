@@ -9,7 +9,7 @@ import {
 } from "@/db/schema";
 import { numberToBigint } from "@/lib/utils";
 import { TRPCError } from "@trpc/server";
-import { and, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, sql, sum } from "drizzle-orm";
 
 export const appRouter = createTRPCRouter({
     createGroup: protectedProcedure
@@ -220,6 +220,38 @@ export const appRouter = createTRPCRouter({
                 })
                 .from(itemTable)
                 .where(eq(itemTable.groupId, input.groupId));
+        }),
+
+    getItemsWithTotal: protectedProcedure
+        .input(v.getItemsWithTotalSchema)
+        .query(async ({ ctx, input }) => {
+            if (!(await isGroupMember(ctx, input.groupId))) {
+                throw new TRPCError({
+                    message: "group not found",
+                    code: "NOT_FOUND",
+                });
+            }
+            return await ctx.db.transaction(async (tx) => {
+                const [items, total] = await Promise.all([
+                    tx
+                        .select({
+                            id: itemTable.id,
+                            name: sql<string>`${itemTable.data}->>'name'`,
+                            amount: itemTable.amount,
+                            data: itemTable.data,
+                        })
+                        .from(itemTable)
+                        .where(eq(itemTable.groupId, input.groupId)),
+                    tx
+                        .select({
+                            total: sum(itemTable.amount).mapWith(BigInt),
+                        })
+                        .from(itemTable)
+                        .where(eq(itemTable.groupId, input.groupId)),
+                ]);
+
+                return { items, total: total[0].total ?? 0 };
+            });
         }),
 
     addItem: protectedProcedure

@@ -35,6 +35,10 @@ export const getItemsSchema = z.object({
     groupId: z.string(),
 });
 
+export const getItemsWithTotalSchema = z.object({
+    groupId: z.string(),
+});
+
 export const addItemSchema = z.object({
     groupId: z.string().nonempty(),
     name: z.string().nonempty(),
