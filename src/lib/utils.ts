@@ -9,7 +9,8 @@ export function bigintToCurrency(n: bigint) {
     const SCALE_FACTOR = 100n;
     const whole = n / SCALE_FACTOR;
     const decimal = n % SCALE_FACTOR;
-    return `${whole}.${decimal}`;
+    const decimalString = decimal.toString().padStart(2, "0");
+    return `${whole}.${decimalString}`;
 }
 
 export function numberToBigint(n: number): bigint {
