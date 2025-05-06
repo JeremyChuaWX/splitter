@@ -348,42 +348,43 @@ export const appRouter = createTRPCRouter({
             const credits = ctx.db
                 .select({
                     userId: creditTable.userId,
-                    amount: creditTable.amount,
+                    totalCredit: sum(creditTable.amount).as("total_credit"),
                 })
-                .from(membershipTable)
+                .from(creditTable)
                 .innerJoin(
-                    creditTable,
-                    eq(creditTable.userId, membershipTable.userId),
+                    membershipTable,
+                    eq(membershipTable.userId, creditTable.userId),
                 )
                 .where(eq(membershipTable.groupId, input.groupId))
+                .groupBy(creditTable.userId)
                 .as("credits");
 
             const debits = ctx.db
                 .select({
                     userId: debitTable.userId,
-                    amount: debitTable.amount,
+                    totalDebit: sum(debitTable.amount).as("total_debit"),
                 })
-                .from(membershipTable)
+                .from(debitTable)
                 .innerJoin(
-                    debitTable,
-                    eq(debitTable.userId, membershipTable.userId),
+                    membershipTable,
+                    eq(membershipTable.userId, debitTable.userId),
                 )
                 .where(eq(membershipTable.groupId, input.groupId))
+                .groupBy(debitTable.userId)
                 .as("debits");
 
             const members = await ctx.db
                 .select({
                     id: membershipTable.userId,
                     balance:
-                        sql<string>`sum(${credits.amount}) - sum(${debits.amount})`.mapWith(
+                        sql<string>`coalesce(${credits.totalCredit}, 0) - coalesce(${debits.totalDebit}, 0)`.mapWith(
                             BigInt,
                         ),
                 })
                 .from(membershipTable)
-                .innerJoin(credits, eq(credits.userId, membershipTable.userId))
-                .innerJoin(debits, eq(debits.userId, membershipTable.userId))
-                .where(eq(membershipTable.groupId, input.groupId))
-                .groupBy(membershipTable.userId);
+                .leftJoin(credits, eq(credits.userId, membershipTable.userId))
+                .leftJoin(debits, eq(debits.userId, membershipTable.userId))
+                .where(eq(membershipTable.groupId, input.groupId));
 
             const balanceMap = new Map<string, bigint>();
             for (const member of members) {
