@@ -99,9 +99,9 @@ function CreateGroupForm({
     const { mutateAsync: createGroup, isPending } = useMutation(
         trpc.createGroup.mutationOptions({
             onSuccess: async () => {
-                await queryClient.invalidateQueries({
-                    queryKey: trpc.getGroups.queryKey(),
-                });
+                await queryClient.invalidateQueries(
+                    trpc.getGroups.queryFilter(),
+                );
                 toast.success("Created group successfully");
                 form.reset();
                 closeFunction();

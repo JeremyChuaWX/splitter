@@ -99,11 +99,9 @@ function AddItemForm({
     const { mutateAsync: addItem, isPending } = useMutation(
         trpc.addItem.mutationOptions({
             onSuccess: async () => {
-                await queryClient.invalidateQueries({
-                    queryKey: trpc.getItemsWithTotal.queryKey({
-                        groupId: groupId,
-                    }),
-                });
+                await queryClient.invalidateQueries(
+                    trpc.getItemsWithTotal.queryFilter({ groupId: groupId }),
+                );
                 toast.success("Added item successfully");
                 form.reset();
                 closeFunction();

@@ -87,9 +87,9 @@ function AddMembersForm({
     const { mutateAsync: addMembers, isPending } = useMutation(
         trpc.addMembers.mutationOptions({
             onSuccess: async () => {
-                await queryClient.invalidateQueries({
-                    queryKey: trpc.getMembers.queryKey({ groupId: groupId }),
-                });
+                await queryClient.invalidateQueries(
+                    trpc.getMembers.queryFilter({ groupId: groupId }),
+                );
                 toast.success("Members added successfully");
                 form.reset();
                 setUsername("");

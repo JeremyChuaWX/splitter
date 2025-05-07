@@ -39,9 +39,9 @@ export function EditGroupForm({
     const { mutateAsync: editGroup, isPending } = useMutation(
         trpc.updateGroup.mutationOptions({
             onSuccess: async () => {
-                await queryClient.invalidateQueries({
-                    queryKey: trpc.getGroup.queryKey({ groupId: groupId }),
-                });
+                await queryClient.invalidateQueries(
+                    trpc.getGroup.queryFilter({ groupId: groupId }),
+                );
                 toast.success("Group edited successfully");
                 closeFunction();
             },
