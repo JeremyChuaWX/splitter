@@ -1,21 +1,7 @@
 "use client";
 
+import { ResponsiveContainer } from "@/components/responsive-container";
 import { Button } from "@/components/ui/button";
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-    Drawer,
-    DrawerClose,
-    DrawerContent,
-    DrawerHeader,
-    DrawerTitle,
-    DrawerTrigger,
-} from "@/components/ui/drawer";
 import {
     Form,
     FormControl,
@@ -25,12 +11,10 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useMediaQuery } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
 import { useTRPC } from "@/trpc/client";
 import { createGroupSchema } from "@/trpc/routers/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { DialogClose } from "@radix-ui/react-dialog";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { LucideLoaderCircle } from "lucide-react";
 import { useState } from "react";
@@ -40,51 +24,26 @@ import { z } from "zod";
 
 export function CreateGroupButton() {
     const [open, setOpen] = useState(false);
-    const isDesktop = useMediaQuery("(min-width: 768px)");
 
-    if (isDesktop) {
-        return (
-            <Dialog open={open} onOpenChange={setOpen}>
-                <DialogTrigger asChild>
+    return (
+        <>
+            <ResponsiveContainer
+                open={open}
+                onOpenChange={setOpen}
+                title="Add Item"
+                triggerComponent={
                     <Button variant="outline">Create Group</Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                        <DialogTitle>Create Group</DialogTitle>
-                    </DialogHeader>
+                }
+                closeComponent={<Button variant="outline">Cancel</Button>}
+                content={({ closeComponent }) => (
                     <CreateGroupForm
                         closeFunction={() => setOpen(false)}
-                        closeComponent={
-                            <DialogClose asChild>
-                                <Button variant="outline">Cancel</Button>
-                            </DialogClose>
-                        }
+                        closeComponent={closeComponent}
                     />
-                </DialogContent>
-            </Dialog>
-        );
-    } else {
-        return (
-            <Drawer open={open} onOpenChange={setOpen}>
-                <DrawerTrigger asChild>
-                    <Button variant="outline">Create Group</Button>
-                </DrawerTrigger>
-                <DrawerContent className="h-[90svh]">
-                    <DrawerHeader className="text-left">
-                        <DrawerTitle>Create Group</DrawerTitle>
-                    </DrawerHeader>
-                    <CreateGroupForm
-                        closeFunction={() => setOpen(false)}
-                        closeComponent={
-                            <DrawerClose asChild>
-                                <Button variant="outline">Cancel</Button>
-                            </DrawerClose>
-                        }
-                    />
-                </DrawerContent>
-            </Drawer>
-        );
-    }
+                )}
+            />
+        </>
+    );
 }
 
 function CreateGroupForm({

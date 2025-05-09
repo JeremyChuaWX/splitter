@@ -6,6 +6,7 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogTrigger,
 } from "@/components/ui/dialog";
 import {
     Drawer,
@@ -13,6 +14,7 @@ import {
     DrawerContent,
     DrawerHeader,
     DrawerTitle,
+    DrawerTrigger,
 } from "@/components/ui/drawer";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { isValidElement, useMemo } from "react";
@@ -26,6 +28,7 @@ type ResponsiveContainerProps = {
     }: {
         closeComponent: React.ReactNode;
     }) => React.ReactNode;
+    triggerComponent?: React.ReactNode;
     closeComponent: React.ReactNode;
     dialogClassName?: string;
     drawerClassName?: string;
@@ -37,12 +40,24 @@ export function ResponsiveContainer({
     onOpenChange,
     title,
     content,
+    triggerComponent,
     closeComponent,
     dialogClassName = "sm:max-w-[500px]",
     drawerClassName = "h-[90svh]",
     drawerContentWrapperClassName = "overflow-auto p-6",
 }: ResponsiveContainerProps) {
     const isDesktop = useMediaQuery("(min-width: 768px)");
+
+    const wrappedTriggerComponent = useMemo(() => {
+        if (!isValidElement(triggerComponent)) {
+            return null;
+        }
+        if (isDesktop) {
+            return <DialogTrigger asChild>{triggerComponent}</DialogTrigger>;
+        } else {
+            return <DrawerTrigger asChild>{triggerComponent}</DrawerTrigger>;
+        }
+    }, [isDesktop, triggerComponent]);
 
     const wrappedCloseComponent = useMemo(() => {
         if (!isValidElement(closeComponent)) {
@@ -60,6 +75,7 @@ export function ResponsiveContainer({
     if (isDesktop) {
         return (
             <Dialog open={open} onOpenChange={onOpenChange}>
+                {wrappedTriggerComponent}
                 <DialogContent className={dialogClassName}>
                     <DialogHeader>
                         <DialogTitle>{title}</DialogTitle>
@@ -71,6 +87,7 @@ export function ResponsiveContainer({
     } else {
         return (
             <Drawer open={open} onOpenChange={onOpenChange}>
+                {wrappedTriggerComponent}
                 <DrawerContent className={drawerClassName}>
                     <DrawerHeader className="text-left">
                         <DrawerTitle>{title}</DrawerTitle>
