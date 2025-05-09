@@ -52,6 +52,35 @@ export const appRouter = createTRPCRouter({
             );
     }),
 
+    getGroupsWithTotal: protectedProcedure.query(async ({ ctx }) => {
+        const groups = ctx.db
+            .select({
+                id: groupTable.id,
+                name: sql<string>`${groupTable.data}->>'name'`.as("name"),
+            })
+            .from(groupTable)
+            .innerJoin(
+                membershipTable,
+                eq(membershipTable.groupId, groupTable.id),
+            )
+            .where(
+                and(
+                    eq(membershipTable.userId, ctx.auth.userId),
+                    isNull(groupTable.deletedAt),
+                ),
+            )
+            .as("groups");
+        return await ctx.db
+            .select({
+                id: groups.id,
+                name: groups.name,
+                total: sum(itemTable.amount).mapWith(BigInt),
+            })
+            .from(groups)
+            .leftJoin(itemTable, eq(itemTable.groupId, groups.id))
+            .groupBy(groups.id, groups.name);
+    }),
+
     getGroup: protectedProcedure
         .input(v.getGroupSchema)
         .query(async ({ ctx, input }) => {

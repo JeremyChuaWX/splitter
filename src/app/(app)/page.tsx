@@ -1,5 +1,8 @@
 import { CreateGroupButton } from "./create-group-button";
-import { ClientGroupSection, ClientGroupSectionSkeleton } from "./group-list";
+import {
+    ClientGroupSection,
+    ClientGroupSectionSkeleton,
+} from "./group-section";
 import { HydrateClient, prefetch, trpc } from "@/trpc/server";
 import { Suspense } from "react";
 
@@ -24,7 +27,7 @@ function Header() {
 }
 
 function GroupSection() {
-    prefetch(trpc.getGroups.queryOptions());
+    prefetch(trpc.getGroupsWithTotal.queryOptions());
 
     return (
         <HydrateClient>
