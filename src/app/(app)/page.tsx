@@ -1,21 +1,16 @@
 import { CreateGroupButton } from "./create-group-button";
-import { GroupList } from "./group-list";
-import { Skeleton } from "@/components/ui/skeleton";
+import { ClientGroupSection, ClientGroupSectionSkeleton } from "./group-list";
 import { HydrateClient, prefetch, trpc } from "@/trpc/server";
 import { Suspense } from "react";
 
 export const dynamic = "force-dynamic";
 
 export default function Page() {
-    prefetch(trpc.getGroups.queryOptions());
-
     return (
-        <HydrateClient>
-            <div className="flex flex-col gap-6 w-full pt-18">
-                <Header />
-                <GroupSection />
-            </div>
-        </HydrateClient>
+        <div className="flex flex-col gap-6 w-full pt-18">
+            <Header />
+            <GroupSection />
+        </div>
     );
 }
 
@@ -29,19 +24,13 @@ function Header() {
 }
 
 function GroupSection() {
+    prefetch(trpc.getGroups.queryOptions());
+
     return (
-        <div className="flex flex-col gap-4 w-full">
-            <Suspense
-                fallback={
-                    <>
-                        <Skeleton className="w-full rounded-xl h-[74px]" />
-                        <Skeleton className="w-full rounded-xl h-[74px]" />
-                        <Skeleton className="w-full rounded-xl h-[74px]" />
-                    </>
-                }
-            >
-                <GroupList />
+        <HydrateClient>
+            <Suspense fallback={<ClientGroupSectionSkeleton />}>
+                <ClientGroupSection />
             </Suspense>
-        </div>
+        </HydrateClient>
     );
 }

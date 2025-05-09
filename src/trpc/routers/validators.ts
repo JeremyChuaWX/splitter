@@ -4,7 +4,7 @@ export const createGroupSchema = z.object({
     name: z.string().nonempty(),
 });
 
-export const getDetailedGroupSchema = z.object({
+export const getGroupSchema = z.object({
     groupId: z.string().nonempty(),
 });
 

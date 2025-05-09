@@ -53,7 +53,7 @@ export const appRouter = createTRPCRouter({
     }),
 
     getGroup: protectedProcedure
-        .input(v.getDetailedGroupSchema)
+        .input(v.getGroupSchema)
         .query(async ({ ctx, input }) => {
             const check = await ctx.db
                 .select({
