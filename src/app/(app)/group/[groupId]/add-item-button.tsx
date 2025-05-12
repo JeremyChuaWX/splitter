@@ -220,7 +220,7 @@ function MemberCombobox({
     }
 
     if (isLoading) {
-        return <Skeleton className="w-20 h-12" />;
+        return <Skeleton className="w-full h-28" />;
     }
 
     return (
