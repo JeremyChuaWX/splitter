@@ -10,14 +10,14 @@ export default function Layout({
     return (
         <div className="flex flex-col items-center h-svh w-svw">
             <Navbar />
-            <div className="p-6 w-full h-full max-w-[650px]">{children}</div>
+            <div className="p-6 w-full h-full max-w-[700px]">{children}</div>
         </div>
     );
 }
 
 function Navbar() {
     return (
-        <div className="flex gap-2 items-center p-4 w-full border-b">
+        <div className="flex gap-2 items-center p-4 w-full border-b max-w-[1000px]">
             <h1 className="flex-1 w-full text-xl font-extrabold">
                 <Link href="/">Splitter</Link>
             </h1>
