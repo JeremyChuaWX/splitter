@@ -1,17 +1,7 @@
-import { AddItemButton } from "./add-item-button";
-import { AddMembersButton } from "./add-members-button";
-import { BalanceSection } from "./balance-section";
+import { BalanceSection, BalanceSectionSkeleton } from "./balance-section";
 import { Header } from "./header";
-import { ItemSection } from "./item-section";
+import { ItemSection, ItemSectionSkeleton } from "./item-section";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-    Table,
-    TableBody,
-    TableCaption,
-    TableCell,
-    TableFooter,
-    TableRow,
-} from "@/components/ui/table";
 import { HydrateClient, prefetch, trpc } from "@/trpc/server";
 import { Suspense } from "react";
 
@@ -42,81 +32,5 @@ export default async function Page({ params }: Props) {
                 </div>
             </div>
         </HydrateClient>
-    );
-}
-
-function ItemSectionSkeleton() {
-    return (
-        <div className="flex flex-col gap-6">
-            <h2 className="text-xl font-medium">Items</h2>
-            <Table>
-                <TableBody>
-                    <ItemRowSkeleton />
-                    <ItemRowSkeleton />
-                    <ItemRowSkeleton />
-                </TableBody>
-                <TableFooter>
-                    <TableRow>
-                        <TableCell colSpan={2}>
-                            <Skeleton className="h-5" />
-                        </TableCell>
-                    </TableRow>
-                </TableFooter>
-                <TableCaption>
-                    <AddItemButton />
-                </TableCaption>
-            </Table>
-        </div>
-    );
-}
-
-function ItemRowSkeleton() {
-    return (
-        <TableRow>
-            <TableCell>
-                <Skeleton className="h-5" />
-            </TableCell>
-            <TableCell>
-                <Skeleton className="h-5" />
-            </TableCell>
-        </TableRow>
-    );
-}
-
-function BalanceSectionSkeleton() {
-    return (
-        <div className="flex flex-col gap-6">
-            <h2 className="text-xl font-medium">Balances</h2>
-            <Table>
-                <TableBody>
-                    <BalanceRowSkeleton />
-                    <BalanceRowSkeleton />
-                    <BalanceRowSkeleton />
-                </TableBody>
-                <TableFooter>
-                    <TableRow>
-                        <TableCell colSpan={2}>
-                            <Skeleton className="h-5" />
-                        </TableCell>
-                    </TableRow>
-                </TableFooter>
-                <TableCaption>
-                    <AddMembersButton />
-                </TableCaption>
-            </Table>
-        </div>
-    );
-}
-
-function BalanceRowSkeleton() {
-    return (
-        <TableRow>
-            <TableCell>
-                <Skeleton className="h-5" />
-            </TableCell>
-            <TableCell>
-                <Skeleton className="h-5" />
-            </TableCell>
-        </TableRow>
     );
 }

@@ -1,11 +1,13 @@
 "use client";
 
 import { AddMembersButton } from "./add-members-button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
     Table,
     TableBody,
     TableCaption,
     TableCell,
+    TableFooter,
     TableRow,
 } from "@/components/ui/table";
 import { bigintToCurrency, cn } from "@/lib/utils";
@@ -56,5 +58,43 @@ export function BalanceSection() {
                 </TableCaption>
             </Table>
         </div>
+    );
+}
+
+export function BalanceSectionSkeleton() {
+    return (
+        <div className="flex flex-col gap-6">
+            <h2 className="text-xl font-medium">Balances</h2>
+            <Table>
+                <TableBody>
+                    <BalanceRowSkeleton />
+                    <BalanceRowSkeleton />
+                    <BalanceRowSkeleton />
+                </TableBody>
+                <TableFooter>
+                    <TableRow>
+                        <TableCell colSpan={2}>
+                            <Skeleton className="h-5" />
+                        </TableCell>
+                    </TableRow>
+                </TableFooter>
+                <TableCaption>
+                    <AddMembersButton />
+                </TableCaption>
+            </Table>
+        </div>
+    );
+}
+
+function BalanceRowSkeleton() {
+    return (
+        <TableRow>
+            <TableCell>
+                <Skeleton className="h-5" />
+            </TableCell>
+            <TableCell>
+                <Skeleton className="h-5" />
+            </TableCell>
+        </TableRow>
     );
 }

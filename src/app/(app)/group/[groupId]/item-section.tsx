@@ -1,6 +1,7 @@
 "use client";
 
 import { AddItemButton } from "./add-item-button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
     Table,
     TableBody,
@@ -51,5 +52,43 @@ export function ItemSection() {
                 </TableCaption>
             </Table>
         </div>
+    );
+}
+
+export function ItemSectionSkeleton() {
+    return (
+        <div className="flex flex-col gap-6">
+            <h2 className="text-xl font-medium">Items</h2>
+            <Table>
+                <TableBody>
+                    <ItemRowSkeleton />
+                    <ItemRowSkeleton />
+                    <ItemRowSkeleton />
+                </TableBody>
+                <TableFooter>
+                    <TableRow>
+                        <TableCell colSpan={2}>
+                            <Skeleton className="h-5" />
+                        </TableCell>
+                    </TableRow>
+                </TableFooter>
+                <TableCaption>
+                    <AddItemButton />
+                </TableCaption>
+            </Table>
+        </div>
+    );
+}
+
+function ItemRowSkeleton() {
+    return (
+        <TableRow>
+            <TableCell>
+                <Skeleton className="h-5" />
+            </TableCell>
+            <TableCell>
+                <Skeleton className="h-5" />
+            </TableCell>
+        </TableRow>
     );
 }
