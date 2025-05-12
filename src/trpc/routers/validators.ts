@@ -54,6 +54,7 @@ export const removeItemsSchema = z.object({
 
 export const updateItemSchema = z.object({
     groupId: z.string().nonempty(),
+    itemId: z.string().nonempty(),
     name: z.union([z.string().nonempty(), z.undefined()]),
     amount: z.union([z.number().nonnegative(), z.undefined()]),
 });

@@ -23,3 +23,9 @@ export function numberToBigint(n: number): bigint {
     const int = n * SCALE_FACTOR;
     return BigInt(int.toFixed(0));
 }
+
+export function bigintToNumber(n: bigint): number {
+    const SCALE_FACTOR = 100;
+    const int = Number(n);
+    return int / SCALE_FACTOR;
+}

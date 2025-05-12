@@ -113,9 +113,6 @@ export const appRouter = createTRPCRouter({
     updateGroup: protectedProcedure
         .input(v.updateGroupSchema)
         .mutation(async ({ ctx, input }) => {
-            if (!input.name) {
-                return;
-            }
             if (!(await isGroupMember(ctx, input.groupId))) {
                 throw new TRPCError({
                     message: "group not found",
@@ -125,9 +122,7 @@ export const appRouter = createTRPCRouter({
             await ctx.db
                 .update(groupTable)
                 .set({
-                    data: {
-                        name: input.name,
-                    },
+                    data: input.name ? { name: input.name } : undefined,
                 })
                 .where(
                     and(
@@ -250,7 +245,8 @@ export const appRouter = createTRPCRouter({
                             data: itemTable.data,
                         })
                         .from(itemTable)
-                        .where(eq(itemTable.groupId, input.groupId)),
+                        .where(eq(itemTable.groupId, input.groupId))
+                        .orderBy(itemTable.createdAt),
                     tx
                         .select({
                             total: sum(itemTable.amount).mapWith(BigInt),
@@ -362,6 +358,20 @@ export const appRouter = createTRPCRouter({
                     code: "NOT_FOUND",
                 });
             }
+            await ctx.db
+                .update(itemTable)
+                .set({
+                    amount: input.amount
+                        ? numberToBigint(input.amount)
+                        : undefined,
+                    data: input.name ? { name: input.name } : undefined,
+                })
+                .where(
+                    and(
+                        eq(itemTable.id, input.itemId),
+                        isNull(itemTable.deletedAt),
+                    ),
+                );
         }),
 
     getBalances: protectedProcedure
