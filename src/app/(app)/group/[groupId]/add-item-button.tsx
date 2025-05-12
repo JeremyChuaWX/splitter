@@ -19,14 +19,11 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useTRPC } from "@/trpc/client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-    useMutation,
-    useQueryClient,
-    useSuspenseQuery,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, LucideLoaderCircle, LucidePlus } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useState } from "react";
@@ -206,10 +203,8 @@ function MemberCombobox({
     const trpc = useTRPC();
     const { groupId } = useParams<{ groupId: string }>();
     const form = useFormContext<z.infer<typeof addItemFormSchema>>();
-    const { data: members } = useSuspenseQuery(
-        trpc.getMembers.queryOptions({
-            groupId: groupId,
-        }),
+    const { data: members, isLoading } = useQuery(
+        trpc.getMembers.queryOptions({ groupId: groupId }),
     );
     function handleSelectMember(memberId: string) {
         const selectedUserIds = new Set(form.getValues(name));
@@ -222,6 +217,10 @@ function MemberCombobox({
             name,
             Array.from(selectedUserIds.entries(), (entry) => entry[0]),
         );
+    }
+
+    if (isLoading) {
+        return <Skeleton className="w-20 h-12" />;
     }
 
     return (
@@ -239,7 +238,7 @@ function MemberCombobox({
                         <CommandList>
                             <CommandEmpty>No member found.</CommandEmpty>
                             <CommandGroup>
-                                {members.map((member) => (
+                                {(members ?? []).map((member) => (
                                     <CommandItem
                                         key={member.id}
                                         value={member.id}

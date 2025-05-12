@@ -1,7 +1,7 @@
 import { CreateGroupButton } from "./create-group-button";
 import {
-    ClientGroupSection,
-    ClientGroupSectionSkeleton,
+    GroupSection as ClientGroupSection,
+    GroupSectionSkeleton as ClientGroupSectionSkeleton,
 } from "./group-section";
 import { HydrateClient, prefetch, trpc } from "@/trpc/server";
 import { Suspense } from "react";

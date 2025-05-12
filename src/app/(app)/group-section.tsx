@@ -7,7 +7,7 @@ import { useTRPC } from "@/trpc/client";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import Link from "next/link";
 
-export function ClientGroupSection() {
+export function GroupSection() {
     const trpc = useTRPC();
     const { data: groups } = useSuspenseQuery(
         trpc.getGroupsWithTotal.queryOptions(),
@@ -37,7 +37,7 @@ export function ClientGroupSection() {
     );
 }
 
-export function ClientGroupSectionSkeleton() {
+export function GroupSectionSkeleton() {
     return (
         <div className="flex flex-col gap-4 w-full">
             <Skeleton className="w-full rounded-xl h-[74px]" />

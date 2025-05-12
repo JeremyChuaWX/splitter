@@ -1,6 +1,7 @@
 "use client";
 
 import { SettingsDropdown } from "./settings-dropdown";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useTRPC } from "@/trpc/client";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { LucideChevronLeft } from "lucide-react";
@@ -25,4 +26,8 @@ export function Header() {
             <SettingsDropdown />
         </div>
     );
+}
+
+export function HeaderSkeleton() {
+    return <Skeleton className="w-full h-12" />;
 }
