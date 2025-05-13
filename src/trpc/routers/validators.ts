@@ -31,12 +31,13 @@ export const removeMembersSchema = z.object({
     members: z.array(z.object({ id: z.string() })).min(1),
 });
 
-export const getItemsSchema = z.object({
+export const getItemsWithTotalSchema = z.object({
     groupId: z.string(),
 });
 
-export const getItemsWithTotalSchema = z.object({
+export const getItemWithParticipantsSchema = z.object({
     groupId: z.string(),
+    itemId: z.string().nonempty(),
 });
 
 export const addItemSchema = z.object({

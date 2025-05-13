@@ -259,6 +259,43 @@ export const appRouter = createTRPCRouter({
             });
         }),
 
+    getItemWithParticipants: protectedProcedure
+        .input(v.getItemWithParticipantsSchema)
+        .query(async ({ ctx, input }) => {
+            if (!(await isGroupMember(ctx, input.groupId))) {
+                throw new TRPCError({
+                    message: "group not found",
+                    code: "NOT_FOUND",
+                });
+            }
+            const item = await ctx.db
+                .select({
+                    id: itemTable.id,
+                    amount: itemTable.amount,
+                    name: sql<string>`${itemTable.data}->>'name'`,
+                })
+                .from(itemTable)
+                .where(
+                    and(
+                        eq(itemTable.id, input.itemId),
+                        isNull(itemTable.deletedAt),
+                    ),
+                );
+            const payees = await ctx.db
+                .select({})
+                .from(debitTable)
+                .where(eq(debitTable.itemId, input.itemId));
+            const payers = await ctx.db
+                .select()
+                .from(creditTable)
+                .where(eq(creditTable.itemId, input.itemId));
+            return {
+                payees: payees,
+                payers: payers,
+                ...item,
+            };
+        }),
+
     addItem: protectedProcedure
         .input(v.addItemSchema)
         .mutation(async ({ ctx, input }) => {

@@ -154,7 +154,7 @@ function ItemRowSkeleton() {
 
 const editItemFormSchema = z.object({
     name: z.string().nonempty(),
-    amount: z.number().nonnegative(),
+    amount: z.number().positive(),
 });
 
 export function EditItemForm({

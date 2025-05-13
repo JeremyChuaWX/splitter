@@ -64,7 +64,7 @@ export function AddItemButton() {
 
 const addItemFormSchema = z.object({
     name: z.string().nonempty(),
-    amount: z.number().gt(0),
+    amount: z.number().positive(),
     payeeIds: z.array(z.string().nonempty()).min(1),
     payerIds: z.array(z.string().nonempty()).min(1),
 });
@@ -91,6 +91,7 @@ function AddItemForm({
             payeeIds: [],
             payerIds: [],
         },
+        reValidateMode: "onSubmit",
     });
 
     const { mutateAsync: addItem, isPending } = useMutation(
@@ -149,13 +150,10 @@ function AddItemForm({
                                 <FormLabel>Amount</FormLabel>
                                 <FormControl>
                                     <Input
-                                        {...field}
                                         type="number"
                                         step="0.01"
                                         min="0"
-                                        onChange={(e) =>
-                                            field.onChange(+e.target.value)
-                                        }
+                                        {...field}
                                     />
                                 </FormControl>
                                 <FormMessage />
